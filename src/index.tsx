@@ -17,6 +17,23 @@ const DevTools = NativeModules.DevTools
       }
     );
 
-export function multiply(a: number, b: number): Promise<number> {
-  return DevTools.multiply(a, b);
+class _DevTools {
+  log(message: string) {
+    DevTools.writeLog(message)
+  }
+
+  getAllLogs(): Promise<string> {
+    return DevTools.getAllLogs()
+  }
+
+  screenshot(): Promise<string> {
+    return DevTools.screenshot()
+  }
+
+  async presentDevTools() {
+    const response = await DevTools.presentDevTools()
+    console.log('[Index.presentDevTools]', response)
+  }
 }
+
+export const devTools = new _DevTools()
