@@ -1,13 +1,19 @@
 import * as React from 'react'
 
 import {StyleSheet, Text, TouchableOpacity, View} from 'react-native'
-import {devTools} from 'react-native-dev-tools'
+import {devTools, DevToolsPresentResult} from 'react-native-dev-tools'
 
 export default function App() {
   // const [logs, setLogs] = useState('')
   // const [screenshot, setScreenshot] = useState<string | null>(null)
 
   const initLogs = async () => {
+    devTools.setup({
+      resultHandler: (data: DevToolsPresentResult) => {
+        if (data) sendLogs(data)
+      },
+      enableShaker: true,
+    })
     await devTools.removeLogFile()
     devTools.log('1 some log')
     devTools.error('1 some error', new Error('Error text'))
@@ -19,16 +25,8 @@ export default function App() {
     // devTools.screenshot().then(setScreenshot)
   }, [])
 
-  const showDev = async () => {
-    const presentResult = await devTools.presentDevTools()
-    if (!presentResult) {
-      console.log("📜 DevTools. Result Hasn't been presented")
-      return
-    }
-    const sendResult = await devTools.sendDevLogs(
-      presentResult.logFile,
-      presentResult.screenshot,
-    )
+  const sendLogs = async (data: DevToolsPresentResult) => {
+    const sendResult = await devTools.sendDevLogs(data.logFile, data.screenshot)
     switch (sendResult) {
       case 'notExists':
         console.log("📜 File doesn't exist")
@@ -39,6 +37,11 @@ export default function App() {
       default:
         console.error('📜 Logs send error.', sendResult)
     }
+  }
+
+  const showDev = async () => {
+    const presentResult = await devTools.presentDevTools()
+    if (presentResult) await sendLogs(presentResult)
   }
 
   return (

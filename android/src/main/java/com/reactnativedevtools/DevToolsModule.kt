@@ -1,10 +1,15 @@
 package com.reactnativedevtools
 
-import android.os.Handler
-import android.os.HandlerThread
+import android.content.Context
+import android.hardware.SensorManager
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleObserver
+import androidx.lifecycle.OnLifecycleEvent
 import com.facebook.react.ReactActivity
 import com.facebook.react.bridge.*
+import com.facebook.react.common.ShakeDetector
 import com.facebook.react.module.annotations.ReactModule
+import com.facebook.react.modules.core.DeviceEventManagerModule
 import com.reactnativedevtools.dialog.ToolsDialogFragment
 import com.reactnativedevtools.logger.Logger
 import com.reactnativedevtools.screenshot.ScreenShotHelper
@@ -14,26 +19,52 @@ private const val DIALOG_TAG = "DevToolsDialog"
 @ReactModule(name = DevToolsModule.NAME)
 class DevToolsModule(
     private val reactContext: ReactApplicationContext
-) : ReactContextBaseJavaModule(reactContext) {
+) : ReactContextBaseJavaModule(reactContext), LifecycleObserver {
 
     companion object {
         const val NAME = "DevTools"
+        const val DATA_KEY = "DevToolsData"
     }
 
     private val logger = Logger(reactContext, "log.text")
+    private val shaker = ShakeDetector({
+        showDialog { result -> sendEvent(DATA_KEY, result) }
+    }, 2)
+    private var shakerEnabled = false
+    private var shakerStarted = false
+
+    @ReactMethod
+    fun enableShaker(enabled: Boolean) {
+        shakerEnabled = enabled
+        if (enabled) enableShakerInternal() else disableShakerInternal()
+    }
+
+    @OnLifecycleEvent(Lifecycle.Event.ON_START)
+    fun enableShakerInternal() {
+        if (shakerEnabled) {
+            shaker.start(reactContext.getSystemService(Context.SENSOR_SERVICE) as SensorManager)
+            shakerStarted = true
+        }
+    }
+
+    @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
+    fun disableShakerInternal() {
+        if (shakerStarted) {
+            shaker.stop()
+            shakerStarted = false
+        }
+    }
 
     override fun getName(): String = NAME
 
-    private val queue by lazy {
-        val thread = HandlerThread("AppLoggerQueue")
-        thread.start()
-        return@lazy Handler(thread.looper)
-    }
-
     @ReactMethod
-    fun writeLog(message: String?) {
-        message ?: return
+    fun writeLog(message: String?, promise: Promise) {
+        if (message == null) {
+            promise.resolve(false)
+            return
+        }
         logger.writeLog(message)
+        promise.resolve(true)
     }
 
     @ReactMethod
@@ -49,11 +80,20 @@ class DevToolsModule(
 
     @ReactMethod
     fun getAllLogs(promise: Promise) {
-        promise.resolve("<Logs>")
+        val file = logger.logFile
+        if (!file.exists()) {
+            promise.resolve(null)
+            return
+        }
+        promise.resolve(file.readText(Charsets.UTF_8))
     }
 
     @ReactMethod
     fun presentDevTools(promise: Promise) {
+        showDialog(promise::resolve)
+    }
+
+    private fun showDialog(onFinish: (data: WritableMap?) -> Unit) {
         val reactActivity = reactContext.currentActivity as ReactActivity
         val fm = reactActivity.supportFragmentManager
         val screenBase64 = ScreenShotHelper.takeScreenShot(reactContext)
@@ -68,7 +108,7 @@ class DevToolsModule(
                             ToolsDialogFragment.ACTION_DISMISS
                         )
                         val screenshot = result.getString(ToolsDialogFragment.RESULT_KEY_SCREENSHOT)
-                        promise.resolve(makePresentResult(action = action, screenshot = screenshot))
+                        onFinish(makePresentResult(action = action, screenshot = screenshot))
                     }
                 )
             }.show(fm, DIALOG_TAG)
@@ -83,5 +123,12 @@ class DevToolsModule(
             }
             else -> null
         }
+    }
+
+    private fun sendEvent(eventName: String, params: WritableMap?) {
+        if (!reactContext.hasActiveCatalystInstance()) return
+        reactContext
+            .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
+            .emit(eventName, params)
     }
 }

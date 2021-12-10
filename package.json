@@ -1,6 +1,6 @@
 {
   "name": "react-native-dev-tools",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "React Native dev tools",
   "main": "src/index",
   "module": "src/index",

@@ -1,4 +1,4 @@
-import {NativeModules, Platform} from 'react-native'
+import {NativeEventEmitter, NativeModules, Platform} from 'react-native'
 import rnfs from 'react-native-fs'
 
 const LINKING_ERROR =
@@ -18,6 +18,8 @@ const DevTools = NativeModules.DevTools
       },
     )
 
+const devToolsEmitter = new NativeEventEmitter(DevTools)
+
 const MOSCOW_TIMEZONE_OFFSET = -180
 
 export interface DevToolsPresentResult {
@@ -34,36 +36,52 @@ enum LogLevel {
 }
 
 class _DevTools {
+  private autoShowResult?: (data: DevToolsPresentResult) => void
+
+  constructor() {
+    devToolsEmitter.addListener('DevToolsData', (data: DevToolsPresentResult) =>
+      this.autoShowResult?.(data),
+    )
+  }
+
+  setup(options: {
+    resultHandler?: (data: DevToolsPresentResult) => void
+    enableShaker?: boolean
+  }) {
+    this.autoShowResult = options.resultHandler
+    if (options.enableShaker) this.enableShaker(true)
+  }
+
   logLevel: LogLevel = LogLevel.LOG
 
-  error(message: string, e: any = undefined) {
+  async error(message: string, e: any = undefined): Promise<boolean> {
     const level = LogLevel.ERROR
-    if (this.logLevel < level) return
-    DevTools.writeLog(this.makeLogString(level, message, e))
+    if (this.logLevel < level) return false
+    return DevTools.writeLog(this.makeLogString(level, message, e))
   }
 
-  warn(message: string, e: any = undefined) {
+  async warn(message: string, e: any = undefined): Promise<boolean> {
     const level = LogLevel.WARN
-    if (this.logLevel < level) return
-    DevTools.writeLog(this.makeLogString(level, message, e))
+    if (this.logLevel < level) return false
+    return DevTools.writeLog(this.makeLogString(level, message, e))
   }
 
-  log(message: string, e: any = undefined) {
+  async log(message: string, e: any = undefined): Promise<boolean> {
     const level = LogLevel.LOG
-    if (this.logLevel < level) return
-    DevTools.writeLog(this.makeLogString(level, message, e))
+    if (this.logLevel < level) return false
+    return DevTools.writeLog(this.makeLogString(level, message, e))
   }
 
-  debug(message: string, e: any = undefined) {
+  async debug(message: string, e: any = undefined): Promise<boolean> {
     const level = LogLevel.DEBUG
-    if (this.logLevel < level) return
-    DevTools.writeLog(this.makeLogString(level, message, e))
+    if (this.logLevel < level) return false
+    return DevTools.writeLog(this.makeLogString(level, message, e))
   }
 
-  trace(message: string, e: any = undefined) {
+  async trace(message: string, e: any = undefined): Promise<boolean> {
     const level = LogLevel.TRACE
-    if (this.logLevel < level) return
-    DevTools.writeLog(this.makeLogString(level, message, e))
+    if (this.logLevel < level) return false
+    return DevTools.writeLog(this.makeLogString(level, message, e))
   }
 
   getAllLogs(): Promise<string> {
@@ -82,12 +100,15 @@ class _DevTools {
     return DevTools.removeLogFile()
   }
 
+  enableShaker(enable: boolean) {
+    DevTools.enableShaker(enable)
+  }
+
   async sendDevLogs(
     path: string,
     screenshotBase64?: string,
   ): Promise<'notExists' | 'success' | Error> {
-    console.log('🔦 try to send file', path)
-    console.log('🔦 try to send screenshot', 'dataExists', !!screenshotBase64)
+    console.log('🔦 screenshot', 'dataExists', !!screenshotBase64)
     const exists = await rnfs.exists(path)
     if (!exists) return 'notExists'
     try {
@@ -110,7 +131,6 @@ class _DevTools {
         },
       })
       await r.promise
-
       return 'success'
     } catch (e) {
       return e as Error
