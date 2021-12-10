@@ -27,8 +27,10 @@ class DevToolsViewController: UIViewController {
     lazy var sendDataButton: UIButton = {
         let view = UIButton()
         view.setTitle("Send data", for: .normal)
-        view.setTitleColor(.black, for: .normal)
+        view.setTitleColor(.white, for: .normal)
         view.addTarget(self, action: #selector(editTapped), for: .touchUpInside)
+        view.backgroundColor = UIColor(red: 18 / 255.0, green: 18 / 255.0, blue: 18 / 255.0, alpha: 1)
+        view.layer.cornerRadius = 12
         return view
     }()
     
@@ -71,8 +73,21 @@ class DevToolsViewController: UIViewController {
     
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-        previewScreenShot.frame = .init(x: 0, y: 0, width: view.frame.width * 0.5, height: view.frame.height * 0.5)
-        sendDataButton.frame = .init(x: 0, y: view.frame.height / 2 + 10, width: view.frame.width, height: 56)
+        let width = view.frame.width * 0.8
+        previewScreenShot.frame = .init(
+            x: (view.frame.width - width) / 2,
+            y: 32,
+            width: width,
+            height: view.frame.height * 0.8
+        )
+        previewScreenShot.layer.cornerRadius = 12
+
+        sendDataButton.frame = .init(
+            x: 16,
+            y: view.frame.height - view.safeAreaInsets.bottom - 56,
+            width: view.frame.width - 32,
+            height: 56
+        )
     }
     
     deinit {
