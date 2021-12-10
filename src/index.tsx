@@ -27,7 +27,7 @@ export interface DevToolsPresentResult {
   readonly screenshot?: string
 }
 
-enum LogLevel {
+export enum LogLevel {
   NONE,
   ERROR,
   WARN,
