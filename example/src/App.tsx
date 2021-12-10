@@ -1,8 +1,8 @@
 import * as React from 'react';
+import {useState} from 'react';
 
-import { StyleSheet, View, Text, Image, Dimensions, TouchableOpacity } from 'react-native';
-import { devTools } from 'react-native-dev-tools';
-import { useState } from 'react';
+import {Dimensions, Image, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import {devTools} from 'react-native-dev-tools';
 
 export default function App() {
   const [logs, setLogs] = useState('')
@@ -26,12 +26,12 @@ export default function App() {
         <Text>Show Dev</Text>
       </TouchableOpacity>
 
-      {/*{!!screenshot && <Image source={{uri: `data:image/png;base64,${screenshot}`}} style={{*/}
-      {/*  width: Dimensions.get('window').width * 0.5,*/}
-      {/*  height: Dimensions.get('window').height * 0.5,*/}
-      {/*  borderWidth: 1,*/}
-      {/*  borderColor: 'yellow'*/}
-      {/*}}/>}*/}
+      {!!screenshot && <Image source={{uri: `data:image/png;base64,${screenshot}`}} style={{
+        width: Dimensions.get('window').width * 0.5,
+        height: Dimensions.get('window').height * 0.5,
+        borderWidth: 1,
+        borderColor: 'green'
+      }}/>}
     </View>
   );
 }

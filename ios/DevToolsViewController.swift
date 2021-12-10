@@ -220,7 +220,7 @@ class DevToolsViewController: UIViewController {
         return view
     }()
     
-    var tempImageView: DrawPathView = {
+    var tempImageView: UIView = {
         let view = UIView()
 //        view.contentMode = .center
 //        view.clipsToBounds = true
