@@ -28,6 +28,7 @@ export interface DevToolsPresentResult {
 }
 
 enum LogLevel {
+  NONE,
   ERROR,
   WARN,
   LOG,
