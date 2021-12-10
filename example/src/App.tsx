@@ -8,13 +8,12 @@ export default function App() {
   // const [screenshot, setScreenshot] = useState<string | null>(null)
 
   const initLogs = async () => {
-    devTools.setup({
+    await devTools.setup({
       resultHandler: (data: DevToolsPresentResult) => {
         if (data) sendLogs(data)
       },
       enableShaker: true,
     })
-    await devTools.removeLogFile()
     devTools.log('1 some log')
     devTools.error('1 some error', new Error('Error text'))
     devTools.warn('1 some Warn')

@@ -44,12 +44,14 @@ class _DevTools {
     )
   }
 
-  setup(options: {
+  async setup(options: {
     resultHandler?: (data: DevToolsPresentResult) => void
     enableShaker?: boolean
+    preserveLog?: boolean
   }) {
     this.autoShowResult = options.resultHandler
     if (options.enableShaker) this.enableShaker(true)
+    if (!options.preserveLog) await this.removeLogFile()
   }
 
   logLevel: LogLevel = LogLevel.LOG
