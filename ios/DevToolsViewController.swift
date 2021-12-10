@@ -27,6 +27,8 @@ open class DrawPathView: UIView {
 
     /// A counter to determine if there are enough points to make a quadcurve
     fileprivate var ctr = 0
+    
+    fileprivate weak var parent: DevToolsViewController?
 
     /// The path to stroke
     fileprivate var path : UIBezierPath?
@@ -133,17 +135,13 @@ open class DrawPathView: UIView {
             if let pth = path {
                 pth.stroke()
             }
-        } else {
-//            let rectPth = UIBezierPath(rect: self.bounds)
-//            UIColor.clear.setFill()
-//            rectPth.fill()
         }
     }
 
     // MARK: - Touch Events -
 
     override open func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-
+        self.parent?.presentationController?.presentedView?.gestureRecognizers?[0].isEnabled = false
         delegate?.viewDrawStartedDrawing?()
 
         ctr = 0
@@ -182,7 +180,7 @@ open class DrawPathView: UIView {
     }
 
     override open func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
-
+        self.parent?.presentationController?.presentedView?.gestureRecognizers?[0].isEnabled = true
         delegate?.viewDrawEndedDrawing?()
         drawBitmap(true)
         setNeedsDisplay()
@@ -220,10 +218,8 @@ class DevToolsViewController: UIViewController {
         return view
     }()
 
-    var tempImageView: UIView = {
-        let view = UIView()
-//        view.contentMode = .center
-//        view.clipsToBounds = true
+    var tempImageView: DrawPathView = {
+        let view = DrawPathView()
         return view
     }()
 
@@ -263,7 +259,8 @@ class DevToolsViewController: UIViewController {
         view.addSubview(previewScreenShot)
         view.addSubview(tempImageView)
         previewScreenShot.image = Self.screenShot
-
+        tempImageView.incrementalImage = Self.screenShot
+        tempImageView.parent = self
         view.addSubview(sendDataButton)
     }
 
@@ -272,7 +269,7 @@ class DevToolsViewController: UIViewController {
     func editTapped() {
         debugPrint("send data")
         Self.didResolveUse = true
-        let image = self.previewScreenShot.image!
+        let image = self.tempImageView.incrementalImage!
         
         DispatchQueue.global(qos: .utility).async {
             let cacheDir = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first!
@@ -320,96 +317,7 @@ class DevToolsViewController: UIViewController {
         Self.screenShot = nil
         Self.resolve = nil
     }
-
-
-
-    var lastPoint = CGPoint.zero
-    var red: CGFloat = 0.0
-    var green: CGFloat = 0.0
-    var blue: CGFloat = 0.0
-    var brushWidth: CGFloat = 2.0
-    var opacity: CGFloat = 1.0
-    var swiped = false
 }
-
-
-//extension DevToolsViewController {
-//    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-//        self.presentationController?.presentedView?.gestureRecognizers?[0].isEnabled = false
-//        swiped = false
-//        if let touch = touches.first {
-//            lastPoint = touch.location(in: self.previewScreenShot)
-//        }
-//
-//        debugPrint(lastPoint)
-//    }
-//
-//    override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
-//        // 6
-//          swiped = true
-//          if let touch = touches.first {
-//              let currentPoint = touch.location(in: self.previewScreenShot)
-//              drawLineFrom(fromPoint: lastPoint, toPoint: currentPoint)
-//
-//            // 7
-//            lastPoint = currentPoint
-//
-//              debugPrint(currentPoint)
-//          }
-//    }
-//
-//    func drawLineFrom(fromPoint: CGPoint, toPoint: CGPoint) {
-//
-//        // 1
-//        UIGraphicsBeginImageContext(self.tempImageView.frame.size)
-//        let context = UIGraphicsGetCurrentContext()
-//        tempImageView.image?.draw(in: CGRect(
-//            x: 0,
-//            y: 0,
-//            width: self.tempImageView.frame.size.width,
-//            height: self.tempImageView.frame.size.height
-//        ))
-//
-//        context?.move(to: fromPoint)
-//        context?.addLine(to: toPoint)
-//        context?.setLineCap(.round)
-//        context?.setLineWidth(brushWidth)
-//        if #available(iOS 13.0, *) {
-//            context?.setStrokeColor(.init(red: red, green: green, blue: blue, alpha: 1.0))
-//        }
-//        context?.setBlendMode(.normal)
-//        context?.strokePath()
-//
-//
-//        // 5
-//        tempImageView.image = UIGraphicsGetImageFromCurrentImageContext()
-//        tempImageView.alpha = opacity
-//        UIGraphicsEndImageContext()
-//
-//    }
-//
-//    override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
-//        if !swiped {
-//            // draw a single point
-//            drawLineFrom(fromPoint: lastPoint, toPoint: lastPoint)
-//        }
-//
-//        // Merge tempImageView into mainImageView
-//        UIGraphicsBeginImageContext(previewScreenShot.frame.size)
-//        previewScreenShot.image?.draw(in: CGRect(
-//            x: 0,
-//            y: 0,
-//            width: previewScreenShot.frame.size.width,
-//            height: previewScreenShot.frame.size.height
-//        ), blendMode: .normal, alpha: 1.0)
-//        tempImageView.image?.draw(in: CGRect(x: 0, y: 0, width: previewScreenShot.frame.size.width, height: previewScreenShot.frame.size.height), blendMode: .normal, alpha: opacity)
-//        previewScreenShot.image = UIGraphicsGetImageFromCurrentImageContext()
-//        UIGraphicsEndImageContext()
-//
-//        tempImageView.image = nil
-//    }
-//}
-
 
 
 extension UIViewController {
@@ -441,8 +349,4 @@ func createScreenshot() -> UIImage {
     let screenshot = UIGraphicsGetImageFromCurrentImageContext()
     UIGraphicsEndImageContext()
     return screenshot!
-//    DispatchQueue.global(qos: .utility).async {
-//        let imageData = screenshot!.pngData()
-//        resolve(imageData!.base64EncodedString())
-//    }
 }
