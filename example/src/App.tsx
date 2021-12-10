@@ -21,24 +21,30 @@ export default function App() {
   }, [])
 
   const sendLogs = async (data: DevToolsPresentResult) => {
-    const sendResult = await devTools.sendDevLogsToSlack({
+    // const sendResult = await devTools.sendDevLogsToSlack({
+    //   logFilePath: data.logFilePath,
+    //   screenshotPath: data.screenshotPath,
+    //   slack: {
+    //     token: 'xoxb-1270849721780-2158556854583-dgHqzxQDYZtzlw8sadOzBOu8',
+    //     channel: 'C025K24LWF6',
+    //   },
+    // })
+
+    const sendResult = await devTools.createJiraIssue({
       logFilePath: data.logFilePath,
       screenshotPath: data.screenshotPath,
-      slack: {
-        token: 'xoxb-1270849721780-2158556854583-dgHqzxQDYZtzlw8sadOzBOu8',
-        channel: 'C025K24LWF6',
+      jira: {
+        token: 'RrGYSzRM3vDmS9grZ8wT5613',
+        email: 'sergeymild@yandex.ru',
+        project: 'MOBI',
+        summary: 'awesome summary',
       },
     })
-    switch (sendResult) {
-      case 'notExists':
-        console.log("📜 File doesn't exist")
-        break
-      case 'success':
-        console.log('📜 Logs sent')
-        break
-      default:
-        console.error('📜 Logs send error.', sendResult)
+    if (sendResult.type === 'error') {
+      console.log('[App.sendLogs.error]', sendResult.message)
+      return
     }
+    console.log('[App.sendLogs.success]', sendResult.issue)
   }
 
   const showDev = async () => {

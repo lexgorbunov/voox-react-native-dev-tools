@@ -1,7 +1,14 @@
 import {NativeEventEmitter, NativeModules, Platform} from 'react-native'
 import rnfs from 'react-native-fs'
-import type {DevToolsPresentResult, UploadParams, UploadResponse} from './types'
+import type {
+  DevToolsPresentResult,
+  JiraIssue,
+  JiraIssueResponse,
+  UploadParams,
+  UploadResponse,
+} from './types'
 import {uploadToSlack} from './slack'
+import {createJiraIssue} from './jira'
 
 const LINKING_ERROR =
   `The package 'react-native-dev-tools' doesn't seem to be linked. Make sure: \n\n` +
@@ -101,6 +108,13 @@ class _DevTools {
     const exists = await rnfs.exists(params.logFilePath)
     if (!exists) return 'notExists'
     if (params.slack) return uploadToSlack(params)
+    return 'success'
+  }
+
+  async createJiraIssue(params: JiraIssue): JiraIssueResponse {
+    const exists = await rnfs.exists(params.logFilePath)
+    if (!exists) return 'notExists'
+    if (params.jira) return createJiraIssue(params)
     return 'success'
   }
 

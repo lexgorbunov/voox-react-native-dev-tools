@@ -14,18 +14,11 @@ export const uploadToSlack = async (params: UploadParams): UploadResponse => {
           filepath: params.logFilePath,
           filetype: 'txt',
         },
-        // {
-        //   name: 'file',
-        //   filename: 'screenshot.jpg',
-        //   filepath: params.screenshotPath!,
-        //   filetype: 'jpg',
-        // },
       ],
       method: 'POST',
       toUrl: 'https://slack.com/api/files.upload',
       fields: {
         channels: params.slack.channel,
-        //filetype: 'text',
         title: `${Platform.OS} ${new Date().toISOString()}.txt`,
         token: params.slack.token,
       },
