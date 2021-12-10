@@ -11,8 +11,15 @@ import React
 
 class Logger {
     let queue = DispatchQueue(label: "logQueue")
+    static var logFilePath: URL!
     
     var isEnabled: Bool = true
+    
+    init() {
+        let dir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).last! as URL
+        let url = dir.appendingPathComponent("log.text")
+        Self.logFilePath = url
+    }
 
     func writeLog(
         _ message: String,
@@ -22,11 +29,7 @@ class Logger {
         queue.async {
             let m = "\(message)\n"
             let data = m.data(using: .utf8)!
-            
-            let dir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).last! as URL
-            let url = dir.appendingPathComponent("log.text")
-            
-            try! data.append(fileURL: url)
+            try! data.append(fileURL: Self.logFilePath)
             resolver("")
         }
     }
@@ -36,9 +39,8 @@ class Logger {
         rejecter: @escaping RCTPromiseRejectBlock
     ) {
         queue.async {
-            let dir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).last! as URL
-            let url = dir.appendingPathComponent("log.text")
-            guard let data = try? Data(contentsOf: url) else {
+            
+            guard let data = try? Data(contentsOf: Self.logFilePath) else {
                 return rejecter("100", "ErrorFetchDataFromFile", nil)
             }
             
@@ -47,6 +49,17 @@ class Logger {
             }
             
             resolver(string)
+        }
+    }
+    
+    func deleteLogFile(resolver: @escaping RCTPromiseResolveBlock) {
+        queue.async {
+            do {
+                try FileManager.default.removeItem(at: Self.logFilePath)
+                resolver(true)
+            } catch {
+                resolver(false)
+            }
         }
     }
 }

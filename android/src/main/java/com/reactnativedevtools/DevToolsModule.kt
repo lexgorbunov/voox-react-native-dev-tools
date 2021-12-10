@@ -28,7 +28,7 @@ class DevToolsModule(
 
     private val logger = Logger(reactContext, "log.text")
     private val shaker = ShakeDetector({
-        showDialog { result -> sendEvent(DATA_KEY, result) }
+      sendEvent(DATA_KEY)
     }, 2)
     private var shakerEnabled = false
     private var shakerStarted = false
@@ -68,7 +68,7 @@ class DevToolsModule(
     }
 
     @ReactMethod
-    fun removeLogFile(promise: Promise) {
+    fun deleteLogFile(promise: Promise) {
         logger.removeLogFile(promise)
     }
 
@@ -118,17 +118,17 @@ class DevToolsModule(
     private fun makePresentResult(action: String, screenshot: String?): WritableMap? {
         return when (action) {
             "send" -> Arguments.createMap().also { result ->
-                result.putString("logFile", logger.logFile.absolutePath)
-                if (!screenshot.isNullOrBlank()) result.putString("screenshot", screenshot)
+                result.putString("logFilePath", logger.logFile.absolutePath)
+                if (!screenshot.isNullOrBlank()) result.putString("screenshotPath", screenshot)
             }
             else -> null
         }
     }
 
-    private fun sendEvent(eventName: String, params: WritableMap?) {
+    private fun sendEvent(eventName: String) {
         if (!reactContext.hasActiveCatalystInstance()) return
         reactContext
             .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
-            .emit(eventName, params)
+            .emit(eventName, Arguments.createMap())
     }
 }

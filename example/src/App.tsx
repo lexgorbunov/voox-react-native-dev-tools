@@ -1,19 +1,15 @@
 import * as React from 'react'
 
 import {StyleSheet, Text, TouchableOpacity, View} from 'react-native'
-import {devTools, DevToolsPresentResult} from 'react-native-dev-tools'
+import {devTools} from 'react-native-dev-tools'
+import type {DevToolsPresentResult} from 'react-native-dev-tools'
 
 export default function App() {
   // const [logs, setLogs] = useState('')
   // const [screenshot, setScreenshot] = useState<string | null>(null)
 
   const initLogs = async () => {
-    await devTools.setup({
-      resultHandler: (data: DevToolsPresentResult) => {
-        if (data) sendLogs(data)
-      },
-      enableShaker: true,
-    })
+    await devTools.setup({enableShaker: true})
     devTools.log('1 some log')
     devTools.error('1 some error', new Error('Error text'))
     devTools.warn('1 some Warn')
@@ -25,7 +21,14 @@ export default function App() {
   }, [])
 
   const sendLogs = async (data: DevToolsPresentResult) => {
-    const sendResult = await devTools.sendDevLogs(data.logFile, data.screenshot)
+    const sendResult = await devTools.sendDevLogsToSlack({
+      logFilePath: data.logFilePath,
+      screenshotPath: data.screenshotPath,
+      slack: {
+        token: 'xoxb-1270849721780-2158556854583-dgHqzxQDYZtzlw8sadOzBOu8',
+        channel: 'C025K24LWF6',
+      },
+    })
     switch (sendResult) {
       case 'notExists':
         console.log("📜 File doesn't exist")

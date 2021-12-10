@@ -1,5 +1,7 @@
 import {NativeEventEmitter, NativeModules, Platform} from 'react-native'
 import rnfs from 'react-native-fs'
+import type {DevToolsPresentResult, UploadParams, UploadResponse} from './types'
+import {uploadToSlack} from './slack'
 
 const LINKING_ERROR =
   `The package 'react-native-dev-tools' doesn't seem to be linked. Make sure: \n\n` +
@@ -22,11 +24,6 @@ const devToolsEmitter = new NativeEventEmitter(DevTools)
 
 const MOSCOW_TIMEZONE_OFFSET = -180
 
-export interface DevToolsPresentResult {
-  readonly logFile: string
-  readonly screenshot?: string
-}
-
 export enum LogLevel {
   NONE,
   ERROR,
@@ -37,22 +34,15 @@ export enum LogLevel {
 }
 
 class _DevTools {
-  private autoShowResult?: (data: DevToolsPresentResult) => void
-
   constructor() {
-    devToolsEmitter.addListener('DevToolsData', (data: DevToolsPresentResult) =>
-      this.autoShowResult?.(data),
-    )
+    devToolsEmitter.addListener('DevToolsData', () => {
+      DevTools.presentDevTools()
+    })
   }
 
-  async setup(options: {
-    resultHandler?: (data: DevToolsPresentResult) => void
-    enableShaker?: boolean
-    preserveLog?: boolean
-  }) {
-    this.autoShowResult = options.resultHandler
+  async setup(options: {enableShaker?: boolean; preserveLog?: boolean}) {
     if (options.enableShaker) this.enableShaker(true)
-    if (!options.preserveLog) await this.removeLogFile()
+    if (!options.preserveLog) await this.deleteLogFile()
   }
 
   logLevel: LogLevel = LogLevel.LOG
@@ -60,31 +50,31 @@ class _DevTools {
   async error(message: string, e: any = undefined): Promise<boolean> {
     const level = LogLevel.ERROR
     if (this.logLevel < level) return false
-    return DevTools.writeLog(this.makeLogString(level, message, e))
+    return DevTools.writeLog(_DevTools.makeLogString(level, message, e))
   }
 
   async warn(message: string, e: any = undefined): Promise<boolean> {
     const level = LogLevel.WARN
     if (this.logLevel < level) return false
-    return DevTools.writeLog(this.makeLogString(level, message, e))
+    return DevTools.writeLog(_DevTools.makeLogString(level, message, e))
   }
 
   async log(message: string, e: any = undefined): Promise<boolean> {
     const level = LogLevel.LOG
     if (this.logLevel < level) return false
-    return DevTools.writeLog(this.makeLogString(level, message, e))
+    return DevTools.writeLog(_DevTools.makeLogString(level, message, e))
   }
 
   async debug(message: string, e: any = undefined): Promise<boolean> {
     const level = LogLevel.DEBUG
     if (this.logLevel < level) return false
-    return DevTools.writeLog(this.makeLogString(level, message, e))
+    return DevTools.writeLog(_DevTools.makeLogString(level, message, e))
   }
 
   async trace(message: string, e: any = undefined): Promise<boolean> {
     const level = LogLevel.TRACE
     if (this.logLevel < level) return false
-    return DevTools.writeLog(this.makeLogString(level, message, e))
+    return DevTools.writeLog(_DevTools.makeLogString(level, message, e))
   }
 
   getAllLogs(): Promise<string> {
@@ -99,61 +89,34 @@ class _DevTools {
     return DevTools.presentDevTools()
   }
 
-  removeLogFile(): Promise<boolean> {
-    return DevTools.removeLogFile()
+  deleteLogFile(): Promise<boolean> {
+    return DevTools.deleteLogFile()
   }
 
   enableShaker(enable: boolean) {
     DevTools.enableShaker(enable)
   }
 
-  async sendDevLogs(
-    path: string,
-    screenshotBase64?: string,
-  ): Promise<'notExists' | 'success' | Error> {
-    console.log('🔦 screenshot', 'dataExists', !!screenshotBase64)
-    const exists = await rnfs.exists(path)
-    if (!exists) {
-      console.log("📜 File doesn't exist")
-      return 'notExists'
-    }
-    try {
-      const r = rnfs.uploadFiles({
-        files: [
-          {
-            name: 'file',
-            filename: 'log.txt',
-            filepath: path,
-            filetype: 'txt',
-          },
-        ],
-        method: 'POST',
-        toUrl: 'https://slack.com/api/files.upload',
-        fields: {
-          channels: 'C025K24LWF6',
-          filetype: 'text',
-          title: `${Platform.OS} ${new Date().toISOString()}.txt`,
-          token: `xoxb-1270849721780-2158556854583-6IsYXrMLl0Nf1f4hbXdBcMS9`,
-        },
-      })
-      await r.promise
-      console.log('📜 Logs sent')
-      return 'success'
-    } catch (e) {
-      console.error('📜 Logs send error.', e)
-      return e as Error
-    }
+  async sendDevLogsToSlack(params: UploadParams): UploadResponse {
+    const exists = await rnfs.exists(params.logFilePath)
+    if (!exists) return 'notExists'
+    if (params.slack) return uploadToSlack(params)
+    return 'success'
   }
 
-  private makeLogString(level: LogLevel, message: string, e?: Error): string {
-    const date = this.getMoscowDate()
+  private static makeLogString(
+    level: LogLevel,
+    message: string,
+    e?: Error,
+  ): string {
+    const date = _DevTools.getMoscowDate()
     const day = date.getDate()
     const month = date.getMonth() + 1
-    const DD = this.pad(day)
-    const MM = this.pad(month)
-    const HH = this.pad(date.getHours())
-    const mm = this.pad(date.getMinutes())
-    const ss = this.pad(date.getSeconds())
+    const DD = _DevTools.pad(day)
+    const MM = _DevTools.pad(month)
+    const HH = _DevTools.pad(date.getHours())
+    const mm = _DevTools.pad(date.getMinutes())
+    const ss = _DevTools.pad(date.getSeconds())
     const time = `${DD}.${MM}.${date.getFullYear()} ${HH}:${mm}:${ss}`
     let error = ''
     if (e) {
@@ -178,14 +141,14 @@ class _DevTools {
         type = 'TRACE'
         break
     }
-    return `${time} ${type}: ${message}${error}`
+    return `[${time} ${type}]: ${message}${error}`
   }
 
-  private pad(value: number): string {
+  private static pad(value: number): string {
     return value < 10 ? `0${value}` : value.toString(10)
   }
 
-  private getMoscowDate(): Date {
+  private static getMoscowDate(): Date {
     const date = new Date()
     return new Date(
       Date.UTC(
@@ -203,3 +166,4 @@ class _DevTools {
 }
 
 export const devTools = new _DevTools()
+export {DevToolsPresentResult}

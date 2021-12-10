@@ -1,8 +1,22 @@
 import UIKit
+import React
 
 @objc(DevTools)
-class DevTools: NSObject {
+class DevTools: RCTEventEmitter {
     let logger = Logger()
+    
+    override class func requiresMainQueueSetup() -> Bool {
+        return false
+    }
+    
+    override func supportedEvents() -> [String]! {
+        return ["DevToolsData"]
+    }
+    
+    @objc
+    func enableShaker(_ enabled: Bool) {
+        //sendEvent(withName: "DevToolsData", body: [])
+    }
     
     @objc
     func presentDevTools(
@@ -54,6 +68,6 @@ class DevTools: NSObject {
         _ resolve: @escaping RCTPromiseResolveBlock,
         reject: @escaping RCTPromiseRejectBlock
     ) {
-        //TODO
+        logger.deleteLogFile(resolver: resolve)
     }
 }
