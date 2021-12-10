@@ -113,7 +113,10 @@ class _DevTools {
   ): Promise<'notExists' | 'success' | Error> {
     console.log('🔦 screenshot', 'dataExists', !!screenshotBase64)
     const exists = await rnfs.exists(path)
-    if (!exists) return 'notExists'
+    if (!exists) {
+      console.log("📜 File doesn't exist")
+      return 'notExists'
+    }
     try {
       const r = rnfs.uploadFiles({
         files: [
@@ -134,8 +137,10 @@ class _DevTools {
         },
       })
       await r.promise
+      console.log('📜 Logs sent')
       return 'success'
     } catch (e) {
+      console.error('📜 Logs send error.', e)
       return e as Error
     }
   }
