@@ -16,6 +16,7 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior.BottomSheetCa
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.reactnativedevtools.R
+import com.reactnativedevtools.RoundTopCornersProvider
 import com.reactnativedevtools.screenshot.ScreenShotHelper
 
 
@@ -65,6 +66,10 @@ class ToolsDialogFragment : BottomSheetDialogFragment() {
                 screenshot?.let { putString(RESULT_KEY_SCREENSHOT, it) }
             })
             dismissAllowingStateLoss()
+        }
+        (view.parent as View?)?.let { handle ->
+            handle.clipToOutline = true
+            handle.outlineProvider = RoundTopCornersProvider()
         }
     }
 
