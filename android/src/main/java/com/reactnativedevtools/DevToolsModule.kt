@@ -3,10 +3,7 @@ package com.reactnativedevtools
 import android.os.Handler
 import android.os.HandlerThread
 import com.facebook.react.ReactActivity
-import com.facebook.react.bridge.Promise
-import com.facebook.react.bridge.ReactApplicationContext
-import com.facebook.react.bridge.ReactContextBaseJavaModule
-import com.facebook.react.bridge.ReactMethod
+import com.facebook.react.bridge.*
 import com.facebook.react.module.annotations.ReactModule
 import com.reactnativedevtools.dialog.ToolsDialogFragment
 import com.reactnativedevtools.logger.Logger
@@ -19,7 +16,11 @@ class DevToolsModule(
     private val reactContext: ReactApplicationContext
 ) : ReactContextBaseJavaModule(reactContext) {
 
-    private val logger = Logger(reactContext)
+    companion object {
+        const val NAME = "DevTools"
+    }
+
+    private val logger = Logger(reactContext, "log.text")
 
     override fun getName(): String = NAME
 
@@ -36,28 +37,51 @@ class DevToolsModule(
     }
 
     @ReactMethod
+    fun removeLogFile(promise: Promise) {
+        logger.removeLogFile(promise)
+    }
+
+    @ReactMethod
     fun screenshot(promise: Promise) {
         val base64Image = ScreenShotHelper.takeScreenShot(reactContext)
-        println("🔦 "+base64Image)
         promise.resolve(base64Image ?: "")
     }
 
     @ReactMethod
     fun getAllLogs(promise: Promise) {
-        println("🔦 Работает! getAllLogs")
         promise.resolve("<Logs>")
     }
 
     @ReactMethod
     fun presentDevTools(promise: Promise) {
-        val fm = (reactContext.currentActivity as ReactActivity).supportFragmentManager
+        val reactActivity = reactContext.currentActivity as ReactActivity
+        val fm = reactActivity.supportFragmentManager
         val screenBase64 = ScreenShotHelper.takeScreenShot(reactContext)
-        ToolsDialogFragment.newInstance(screenshot = screenBase64).show(fm, DIALOG_TAG)
-        promise.resolve("")
+        UiThreadUtil.runOnUiThread {
+            ToolsDialogFragment.newInstance(screenshot = screenBase64).apply {
+                fm.setFragmentResultListener(
+                    ToolsDialogFragment.REQUEST_KEY,
+                    this,
+                    { _, result ->
+                        val action = result.getString(
+                            ToolsDialogFragment.RESULT_KEY_ACTION,
+                            ToolsDialogFragment.ACTION_DISMISS
+                        )
+                        val screenshot = result.getString(ToolsDialogFragment.RESULT_KEY_SCREENSHOT)
+                        promise.resolve(makePresentResult(action = action, screenshot = screenshot))
+                    }
+                )
+            }.show(fm, DIALOG_TAG)
+        }
     }
 
-    companion object {
-        const val NAME = "DevTools"
-//        external fun nativeMultiply(a: Int, b: Int): Int
+    private fun makePresentResult(action: String, screenshot: String?): WritableMap? {
+        return when (action) {
+            "send" -> Arguments.createMap().also { result ->
+                result.putString("logFile", logger.logFile.absolutePath)
+                if (!screenshot.isNullOrBlank()) result.putString("screenshot", screenshot)
+            }
+            else -> null
+        }
     }
 }

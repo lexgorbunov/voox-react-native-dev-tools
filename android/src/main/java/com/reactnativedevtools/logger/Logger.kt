@@ -4,10 +4,11 @@ import android.content.Context
 import android.os.Handler
 import android.os.HandlerThread
 import com.facebook.react.bridge.Promise
-import com.facebook.react.bridge.ReactMethod
 import java.io.File
 
-class Logger(private val context: Context) {
+class Logger(context: Context, logFileName: String) {
+
+    val logFile = File(context.filesDir, logFileName)
 
     private val queue by lazy {
         val thread = HandlerThread("AppLoggerQueue")
@@ -15,15 +16,22 @@ class Logger(private val context: Context) {
         return@lazy Handler(thread.looper)
     }
 
-    @ReactMethod
     fun writeLog(message: String, promise: Promise? = null) {
         queue.post {
             ///data/user/0/adverto.sale/files/log.text
-            val file = File(context.filesDir, "log.text")
-            if (!file.exists()) file.createNewFile()
-            file.appendText(message)
-            file.appendText("\n")
+            if (!logFile.exists()) logFile.createNewFile()
+            logFile.appendText(message)
+            logFile.appendText("\n")
             promise?.resolve("")
         }
+    }
+
+    fun removeLogFile(promise: Promise) {
+        if (logFile.exists()) {
+            logFile.delete()
+            promise.resolve(true)
+            return
+        }
+        promise.resolve(false)
     }
 }

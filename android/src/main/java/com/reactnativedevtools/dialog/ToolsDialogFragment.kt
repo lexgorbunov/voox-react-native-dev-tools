@@ -2,6 +2,7 @@ package com.reactnativedevtools.dialog
 
 import android.app.Activity
 import android.app.Dialog
+import android.content.DialogInterface
 import android.os.Bundle
 import android.util.DisplayMetrics
 import android.view.LayoutInflater
@@ -11,6 +12,7 @@ import android.widget.Button
 import android.widget.FrameLayout
 import android.widget.ImageView
 import com.google.android.material.bottomsheet.BottomSheetBehavior
+import com.google.android.material.bottomsheet.BottomSheetBehavior.BottomSheetCallback
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.reactnativedevtools.R
@@ -27,6 +29,21 @@ class ToolsDialogFragment : BottomSheetDialogFragment() {
                 screenshot?.let { putString(ARG_SCREENSHOT_SRC, it) }
             }
         }
+
+        const val REQUEST_KEY = "DevToolsDialog-result-key"
+        const val RESULT_KEY_ACTION = "action-key"
+        const val RESULT_KEY_SCREENSHOT = "screenshot-key"
+
+        const val ACTION_DISMISS = "dismiss"
+        const val ACTION_SEND = "send"
+    }
+
+    private val bottomSheetCallback = object : BottomSheetCallback() {
+        override fun onStateChanged(bottomSheet: View, newState: Int) {
+            if (newState == BottomSheetBehavior.STATE_HIDDEN) dismiss()
+        }
+
+        override fun onSlide(bottomSheet: View, slideOffset: Float) = Unit
     }
 
     override fun onCreateView(
@@ -37,12 +54,17 @@ class ToolsDialogFragment : BottomSheetDialogFragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        arguments?.getString(ARG_SCREENSHOT_SRC)?.let { screenshot ->
+        val screenshot = arguments?.getString(ARG_SCREENSHOT_SRC)
+        screenshot?.let {
             val bitmap = ScreenShotHelper.decodeImage(screenshot)
             view.findViewById<ImageView>(R.id.screenshotImg).setImageBitmap(bitmap)
         }
         view.findViewById<Button>(R.id.sendBtn).setOnClickListener {
-            println("🔦 Send callback")
+            parentFragmentManager.setFragmentResult(REQUEST_KEY, Bundle().apply {
+                putString(RESULT_KEY_ACTION, ACTION_SEND)
+                screenshot?.let { putString(RESULT_KEY_SCREENSHOT, it) }
+            })
+            dismissAllowingStateLoss()
         }
     }
 
@@ -58,8 +80,16 @@ class ToolsDialogFragment : BottomSheetDialogFragment() {
                 bottomSheet.layoutParams = layoutParams
                 behavior.state = BottomSheetBehavior.STATE_EXPANDED
                 behavior.skipCollapsed = true
+                behavior.addBottomSheetCallback(bottomSheetCallback)
             }
         }
+    }
+
+    override fun onDismiss(dialog: DialogInterface) {
+        parentFragmentManager.setFragmentResult(REQUEST_KEY, Bundle().apply {
+            putString(RESULT_KEY_ACTION, ACTION_DISMISS)
+        })
+        super.onDismiss(dialog)
     }
 
     private fun getBottomSheetDialogDefaultHeight(): Int = getWindowHeight() * 85 / 100
