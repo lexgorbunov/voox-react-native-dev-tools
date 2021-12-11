@@ -21,25 +21,35 @@ export default function App() {
   }, [])
 
   const sendLogs = async (data: DevToolsPresentResult) => {
-    // const sendResult = await devTools.sendDevLogsToSlack({
-    //   logFilePath: data.logFilePath,
-    //   screenshotPath: data.screenshotPath,
-    //   slack: {
-    //     token: 'xoxb-1270849721780-2158556854583-dgHqzxQDYZtzlw8sadOzBOu8',
-    //     channel: 'C025K24LWF6',
-    //   },
-    // })
-
-    const sendResult = await devTools.createJiraIssue({
+    const sendResult = await devTools.sendDevLogsToSlack({
       logFilePath: data.logFilePath,
       screenshotPath: data.screenshotPath,
-      jira: {
-        token: 'RrGYSzRM3vDmS9grZ8wT5613',
-        email: 'sergeymild@yandex.ru',
-        project: 'MOBI',
-        summary: 'awesome summary',
+      slack: {
+        token: 'xoxb-1270849721780-2158556854583-dgHqzxQDYZtzlw8sadOzBOu8',
+        token2:
+          'xoxp-1270849721780-1263291811317-2826578503635-396bfee19f8bbbd054525944750f7f7b',
+        channel: 'C025K24LWF6',
       },
     })
+
+    // const sendResult = await devTools.sendDevLogsToDiscord({
+    //   logFilePath: data.logFilePath,
+    //   screenshotPath: data.screenshotPath,
+    //   content: 'some content',
+    //   discord: {webhook: ''},
+    // })
+    // console.log('[App.sendLogs]', sendResult)
+
+    // const sendResult = await devTools.createJiraIssue({
+    //   logFilePath: data.logFilePath,
+    //   screenshotPath: data.screenshotPath,
+    //   jira: {
+    //     token: 'RrGYSzRM3vDmS9grZ8wT5613',
+    //     email: 'sergeymild@yandex.ru',
+    //     project: 'MOBI',
+    //     summary: 'awesome summary',
+    //   },
+    // })
     if (sendResult.type === 'error') {
       console.log('[App.sendLogs.error]', sendResult.message)
       return

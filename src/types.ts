@@ -1,9 +1,19 @@
 export interface UploadParams {
   logFilePath: string
   screenshotPath?: string
-  slack?: {
+  slack: {
     token: string
+    token2: string
     channel: string
+  }
+}
+
+export interface DiscordParams {
+  logFilePath: string
+  screenshotPath?: string
+  content: string
+  discord: {
+    webhook: string
   }
 }
 
@@ -18,7 +28,20 @@ export interface JiraIssue {
   }
 }
 
-export type UploadResponse = Promise<'notExists' | 'success' | Error>
+type SlackError = {
+  type: 'error'
+  message:
+    | 'errorCreateMessage'
+    | 'errorUploadLogFile'
+    | 'errorUploadScreenshot'
+    | Error
+}
+
+type SlackSuccess = {
+  type: 'success'
+}
+
+export type SlackResponse = Promise<SlackSuccess | SlackError>
 
 type JiraError = {
   type: 'error'

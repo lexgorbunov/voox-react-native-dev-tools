@@ -2,13 +2,16 @@ import {NativeEventEmitter, NativeModules, Platform} from 'react-native'
 import rnfs from 'react-native-fs'
 import type {
   DevToolsPresentResult,
+  DiscordParams,
   JiraIssue,
   JiraIssueResponse,
+  SlackResponse,
   UploadParams,
   UploadResponse,
 } from './types'
 import {uploadToSlack} from './slack'
 import {createJiraIssue} from './jira'
+import {uploadToDiscord} from './discord'
 
 const LINKING_ERROR =
   `The package 'react-native-dev-tools' doesn't seem to be linked. Make sure: \n\n` +
@@ -104,10 +107,17 @@ class _DevTools {
     DevTools.enableShaker(enable)
   }
 
-  async sendDevLogsToSlack(params: UploadParams): UploadResponse {
+  async sendDevLogsToSlack(params: UploadParams): SlackResponse {
     const exists = await rnfs.exists(params.logFilePath)
     if (!exists) return 'notExists'
     if (params.slack) return uploadToSlack(params)
+    return 'success'
+  }
+
+  async sendDevLogsToDiscord(params: DiscordParams): UploadResponse {
+    const exists = await rnfs.exists(params.logFilePath)
+    if (!exists) return 'notExists'
+    if (params.slack) return uploadToDiscord(params)
     return 'success'
   }
 

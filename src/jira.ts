@@ -65,7 +65,6 @@ const uploadFile = async (params: {
 }
 
 export const createJiraIssue = async (params: JiraIssue): JiraIssueResponse => {
-  if (!params.jira) return 'success'
   try {
     const authorization = `Basic ${Buffer.from(
       `${params.jira.email}:${params.jira.token}`,
