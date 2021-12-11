@@ -1,8 +1,8 @@
 import * as React from 'react'
 
 import {StyleSheet, Text, TouchableOpacity, View} from 'react-native'
-import {devTools} from 'react-native-dev-tools'
 import type {DevToolsPresentResult} from 'react-native-dev-tools'
+import {devTools} from 'react-native-dev-tools'
 
 export default function App() {
   // const [logs, setLogs] = useState('')
@@ -20,10 +20,11 @@ export default function App() {
     // devTools.screenshot().then(setScreenshot)
   }, [])
 
-  const sendLogs = async (data: DevToolsPresentResult) => {
+  const sendToSlack = async (data: DevToolsPresentResult) => {
     const sendResult = await devTools.sendDevLogsToSlack({
       logFilePath: data.logFilePath,
       screenshotPath: data.screenshotPath,
+      summary: data.summary,
       slack: {
         token: 'xoxb-1270849721780-2158556854583-dgHqzxQDYZtzlw8sadOzBOu8',
         token2:
@@ -31,35 +32,25 @@ export default function App() {
         channel: 'C025K24LWF6',
       },
     })
+    console.log('[App.sendToSlack]', sendResult)
+  }
 
-    // const sendResult = await devTools.sendDevLogsToDiscord({
-    //   logFilePath: data.logFilePath,
-    //   screenshotPath: data.screenshotPath,
-    //   content: 'some content',
-    //   discord: {webhook: ''},
-    // })
-    // console.log('[App.sendLogs]', sendResult)
-
-    // const sendResult = await devTools.createJiraIssue({
-    //   logFilePath: data.logFilePath,
-    //   screenshotPath: data.screenshotPath,
-    //   jira: {
-    //     token: 'RrGYSzRM3vDmS9grZ8wT5613',
-    //     email: 'sergeymild@yandex.ru',
-    //     project: 'MOBI',
-    //     summary: 'awesome summary',
-    //   },
-    // })
-    if (sendResult.type === 'error') {
-      console.log('[App.sendLogs.error]', sendResult.message)
-      return
-    }
-    console.log('[App.sendLogs.success]', sendResult.issue)
+  const sendToDiscord = async (data: DevToolsPresentResult) => {
+    const sendResult = await devTools.sendDevLogsToDiscord({
+      logFilePath: data.logFilePath,
+      screenshotPath: data.screenshotPath,
+      summary: data.summary,
+      discord: {
+        webhook:
+          'https://discord.com/api/webhooks/918915334168256522/mZRVbzVCNSRaDCKxyr-dZhw_4uG4nU3ptlteu2NvEGLUPLeKWUPxL6uuhUHNRDlACV42',
+      },
+    })
+    console.log('[App.sendToDiscord]', sendResult)
   }
 
   const showDev = async () => {
     const presentResult = await devTools.presentDevTools()
-    if (presentResult) await sendLogs(presentResult)
+    if (presentResult) await sendToDiscord(presentResult)
   }
 
   return (
@@ -69,13 +60,6 @@ export default function App() {
       <TouchableOpacity onPress={showDev}>
         <Text>Show Dev</Text>
       </TouchableOpacity>
-
-      {/*{!!screenshot && <Image source={{uri: `data:image/png;base64,${screenshot}`}} style={{*/}
-      {/*  width: Dimensions.get('window').width * 0.5,*/}
-      {/*  height: Dimensions.get('window').height * 0.5,*/}
-      {/*  borderWidth: 1,*/}
-      {/*  borderColor: 'green'*/}
-      {/*}}/>}*/}
     </View>
   )
 }

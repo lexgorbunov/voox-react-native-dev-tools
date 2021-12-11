@@ -1,10 +1,9 @@
-import type {UploadResponse} from './types'
-import type {DiscordParams} from './types'
+import type {DiscordParams, DiscordResponse} from './types'
 import rnfs from 'react-native-fs'
 
 export const uploadToDiscord = async (
   params: DiscordParams,
-): UploadResponse => {
+): DiscordResponse => {
   try {
     console.log('[Discord.uploadToDiscord]', params)
     const r = rnfs.uploadFiles({
@@ -26,15 +25,17 @@ export const uploadToDiscord = async (
       toUrl: params.discord.webhook,
       fields: {
         payload_json: JSON.stringify({
-          content: params.content,
+          content: params.summary,
         }),
       },
     })
     const response = await r.promise
-    const json = JSON.parse(response.body)
-    if (json.ok) return 'success'
-    throw new Error(json.error)
+    if (response.statusCode === 200) {
+      return {type: 'success'}
+    }
+    return {type: 'error', message: 'errorCreateMessage'}
   } catch (e) {
-    return e as Error
+    console.log('[Discord.uploadToDiscord]', e)
+    throw e
   }
 }

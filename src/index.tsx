@@ -3,11 +3,12 @@ import rnfs from 'react-native-fs'
 import type {
   DevToolsPresentResult,
   DiscordParams,
+  DiscordResponse,
+  FileNotExists,
   JiraIssue,
   JiraIssueResponse,
   SlackResponse,
   UploadParams,
-  UploadResponse,
 } from './types'
 import {uploadToSlack} from './slack'
 import {createJiraIssue} from './jira'
@@ -107,25 +108,28 @@ class _DevTools {
     DevTools.enableShaker(enable)
   }
 
-  async sendDevLogsToSlack(params: UploadParams): SlackResponse {
+  async sendDevLogsToSlack(
+    params: UploadParams,
+  ): Promise<SlackResponse | FileNotExists> {
     const exists = await rnfs.exists(params.logFilePath)
     if (!exists) return 'notExists'
-    if (params.slack) return uploadToSlack(params)
-    return 'success'
+    return uploadToSlack(params)
   }
 
-  async sendDevLogsToDiscord(params: DiscordParams): UploadResponse {
+  async sendDevLogsToDiscord(
+    params: DiscordParams,
+  ): Promise<DiscordResponse | FileNotExists> {
     const exists = await rnfs.exists(params.logFilePath)
     if (!exists) return 'notExists'
-    if (params.slack) return uploadToDiscord(params)
-    return 'success'
+    return uploadToDiscord(params)
   }
 
-  async createJiraIssue(params: JiraIssue): JiraIssueResponse {
+  async createJiraIssue(
+    params: JiraIssue,
+  ): Promise<JiraIssueResponse | FileNotExists> {
     const exists = await rnfs.exists(params.logFilePath)
     if (!exists) return 'notExists'
-    if (params.jira) return createJiraIssue(params)
-    return 'success'
+    return createJiraIssue(params)
   }
 
   private static makeLogString(
