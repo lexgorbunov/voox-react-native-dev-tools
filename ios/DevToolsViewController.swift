@@ -208,6 +208,23 @@ open class DrawPathView: UIView {
     }
 }
 
+class TextField: UITextField {
+
+    let padding = UIEdgeInsets(top: 0, left: 8, bottom: 0, right: 8)
+
+    override open func textRect(forBounds bounds: CGRect) -> CGRect {
+        return bounds.inset(by: padding)
+    }
+
+    override open func placeholderRect(forBounds bounds: CGRect) -> CGRect {
+        return bounds.inset(by: padding)
+    }
+
+    override open func editingRect(forBounds bounds: CGRect) -> CGRect {
+        return bounds.inset(by: padding)
+    }
+}
+
 
 class DevToolsViewController: UIViewController {
 
@@ -218,9 +235,37 @@ class DevToolsViewController: UIViewController {
         return view
     }()
 
-    var tempImageView: DrawPathView = {
-        let view = DrawPathView()
-        return view
+    let tempImageView = DrawPathView()
+    
+    let borderColor = UIColor(red: 238 / 255.0, green: 238 / 255.0, blue: 239 / 255.0, alpha: 1.0)
+    lazy var tokenInput: UITextField = {
+        let v = TextField()
+        v.placeholder = "Token"
+        v.layer.cornerRadius = 8
+        v.layer.borderWidth = 1
+        v.layer.borderColor = borderColor.cgColor
+        
+        return v
+    }()
+    
+    lazy var projectInput: UITextField = {
+        let v = TextField()
+        v.placeholder = "Project (MON)"
+        v.layer.cornerRadius = 8
+        v.layer.borderWidth = 1
+        v.layer.borderColor = borderColor.cgColor
+        
+        return v
+    }()
+    
+    lazy var summaryInput: UITextView = {
+        let v = UITextView()
+        v.layer.cornerRadius = 8
+        v.layer.borderWidth = 1
+        v.layer.borderColor = borderColor.cgColor
+        v.contentInset = .init(top: 8, left: 8, bottom: 8, right: 8)
+        
+        return v
     }()
 
 
@@ -245,7 +290,6 @@ class DevToolsViewController: UIViewController {
         Self.resolve = resolve
         DispatchQueue.main.async {
             Self.screenShot = createScreenshot()
-
             let controller = DevToolsViewController()
             controller.modalPresentationStyle = .formSheet
             topPresentingController.present(controller, animated: true)
@@ -262,6 +306,9 @@ class DevToolsViewController: UIViewController {
         tempImageView.incrementalImage = Self.screenShot
         tempImageView.parent = self
         view.addSubview(sendDataButton)
+        view.addSubview(tokenInput)
+        view.addSubview(projectInput)
+        view.addSubview(summaryInput)
     }
 
 
@@ -288,21 +335,41 @@ class DevToolsViewController: UIViewController {
 
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-        let width = view.frame.width * 0.8
         previewScreenShot.frame = .init(
-            x: (view.frame.width - width) / 2,
-            y: 32,
-            width: width,
-            height: view.frame.height * 0.8
+            x: 16,
+            y: 16,
+            width: 100,
+            height: 200
         )
-        tempImageView.frame = .init(
-            x: (view.frame.width - width) / 2,
-            y: 32,
-            width: width,
-            height: view.frame.height * 0.8
-        )
+        tempImageView.frame = previewScreenShot.frame
+        tempImageView.layer.cornerRadius = 12
+        tempImageView.clipsToBounds = true
         previewScreenShot.layer.cornerRadius = 12
 
+        let x = previewScreenShot.frame.maxX + 16
+        tokenInput.frame = .init(
+            x: x,
+            y: 16,
+            width: view.frame.width - x - 16,
+            height: 48
+        )
+        
+        projectInput.frame = .init(
+            x: x,
+            y: tokenInput.frame.maxY + 16,
+            width: view.frame.width - x - 16,
+            height: 48
+        )
+        
+        
+        summaryInput.frame = .init(
+            x: 16,
+            y: previewScreenShot.frame.maxY + 16,
+            width: view.frame.width - 32,
+            height: 100
+        )
+        
+        
         sendDataButton.frame = .init(
             x: 16,
             y: view.frame.height - view.safeAreaInsets.bottom - 56,
