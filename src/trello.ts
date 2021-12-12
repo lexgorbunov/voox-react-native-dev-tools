@@ -1,6 +1,9 @@
 import type {TrelloParams, TrelloResponse} from './types'
 import rnfs from 'react-native-fs'
 
+// get user token
+//https://trello.com/1/authorize?expiration=never&scope=read,write,account&response_type=token&name=Server%20Token&key=9591e9521f0c60541c07c3eb8bdeff61
+
 const uploadFile = async (params: {
   filename: string
   path: string
