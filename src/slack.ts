@@ -85,6 +85,48 @@ export const uploadToSlack = async (params: UploadParams): SlackResponse => {
     if (!uploadStatus) return {type: 'error', message: 'errorUploadLogFile'}
     logLink = uploadStatus
 
+    console.log('[Slack.uploadToSlack]', logLink, screenshotLink)
+
+    const blocks: any[] = [
+      {
+        type: 'header',
+        text: {
+          type: 'plain_text',
+          text: `:point_down: Log (${Platform.OS.toUpperCase()})`,
+          emoji: true,
+        },
+      },
+    ]
+
+    if (params.summary) {
+      blocks.push({
+        type: 'context',
+        elements: [{type: 'plain_text', text: params.summary}],
+      })
+    }
+
+    if (screenshotLink) {
+      blocks.push({
+        title: {
+          type: 'plain_text',
+          text: 'Screenshot',
+        },
+        type: 'image',
+        alt_text: 'screenshot',
+        image_url: screenshotLink,
+      })
+    }
+
+    if (logLink) {
+      blocks.push({
+        type: 'section',
+        text: {
+          type: 'mrkdwn',
+          text: `<${logLink}|Show logs>`,
+        },
+      })
+    }
+
     let response = await fetch(`https://slack.com/api/chat.postMessage`, {
       method: 'POST',
       headers: {
@@ -96,36 +138,7 @@ export const uploadToSlack = async (params: UploadParams): SlackResponse => {
         attachments: [
           {
             color: '#f2c744',
-            blocks: [
-              {
-                type: 'header',
-                text: {
-                  type: 'plain_text',
-                  text: `:point_down: Log (${Platform.OS.toUpperCase()})`,
-                  emoji: true,
-                },
-              },
-              {
-                type: 'context',
-                elements: [{type: 'plain_text', text: params.summary}],
-              },
-              {
-                title: {
-                  type: 'plain_text',
-                  text: 'Screenshot',
-                },
-                type: 'image',
-                alt_text: 'screenshot',
-                image_url: screenshotLink,
-              },
-              {
-                type: 'section',
-                text: {
-                  type: 'mrkdwn',
-                  text: `<${logLink}|Show logs>`,
-                },
-              },
-            ],
+            blocks: blocks,
           },
         ],
       }),
@@ -133,6 +146,8 @@ export const uploadToSlack = async (params: UploadParams): SlackResponse => {
 
     const json = await response.json()
     if (json.ok) return {type: 'success'}
+    else
+      console.log('[Slack.uploadToSlack]\n', JSON.stringify(json, undefined, 2))
     return {type: 'error', message: 'errorCreateMessage'}
   } catch (e) {
     console.log('[Slack.uploadToSlack.error]', e)
