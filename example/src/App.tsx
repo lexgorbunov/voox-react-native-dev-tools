@@ -20,6 +20,8 @@ export default function App() {
     // devTools.screenshot().then(setScreenshot)
   }, [])
 
+  // @ts-ignore
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const sendToSlack = async (data: DevToolsPresentResult) => {
     const sendResult = await devTools.sendDevLogsToSlack({
       logFilePath: data.logFilePath,
@@ -35,6 +37,25 @@ export default function App() {
     console.log('[App.sendToSlack]', sendResult)
   }
 
+  // @ts-ignore
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const sendToTrello = async (data: DevToolsPresentResult) => {
+    const sendResult = await devTools.sendDevLogsToTrello({
+      logFilePath: data.logFilePath,
+      screenshotPath: data.screenshotPath,
+      summary: data.summary,
+      trello: {
+        token:
+          '2fd8e554d8c4d62492cdec2b7e3e340c40e2b5f71041cc1c39e38c75a994600c',
+        apiKey: '9591e9521f0c60541c07c3eb8bdeff61',
+        listId: '6173c87b7f5968220f0123f4', // backlog
+      },
+    })
+    console.log('[App.sendToDiscord]', sendResult)
+  }
+
+  // @ts-ignore
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const sendToDiscord = async (data: DevToolsPresentResult) => {
     const sendResult = await devTools.sendDevLogsToDiscord({
       logFilePath: data.logFilePath,
@@ -50,7 +71,7 @@ export default function App() {
 
   const showDev = async () => {
     const presentResult = await devTools.presentDevTools()
-    if (presentResult) await sendToDiscord(presentResult)
+    if (presentResult) await sendToTrello(presentResult)
   }
 
   return (

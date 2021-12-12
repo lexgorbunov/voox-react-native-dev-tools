@@ -8,11 +8,13 @@ import type {
   JiraIssue,
   JiraIssueResponse,
   SlackResponse,
+  TrelloParams,
   UploadParams,
 } from './types'
 import {uploadToSlack} from './slack'
 import {createJiraIssue} from './jira'
 import {uploadToDiscord} from './discord'
+import {uploadToTrello} from './trello'
 
 const LINKING_ERROR =
   `The package 'react-native-dev-tools' doesn't seem to be linked. Make sure: \n\n` +
@@ -114,6 +116,14 @@ class _DevTools {
     const exists = await rnfs.exists(params.logFilePath)
     if (!exists) return 'notExists'
     return uploadToSlack(params)
+  }
+
+  async sendDevLogsToTrello(
+    params: TrelloParams,
+  ): Promise<SlackResponse | FileNotExists> {
+    const exists = await rnfs.exists(params.logFilePath)
+    if (!exists) return 'notExists'
+    return uploadToTrello(params)
   }
 
   async sendDevLogsToDiscord(

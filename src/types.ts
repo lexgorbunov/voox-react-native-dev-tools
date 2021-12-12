@@ -20,6 +20,17 @@ export interface DiscordParams {
   }
 }
 
+export interface TrelloParams {
+  logFilePath: string
+  screenshotPath?: string
+  summary: string
+  trello: {
+    apiKey: string
+    token: string
+    listId: string
+  }
+}
+
 export interface JiraIssue {
   logFilePath: string
   screenshotPath?: string
@@ -60,6 +71,21 @@ type DiscordSuccess = {
 }
 
 export type DiscordResponse = Promise<DiscordSuccess | DiscordError>
+
+type TrelloError = {
+  type: 'error'
+  message:
+    | 'errorCreateMessage'
+    | 'errorUploadLogFile'
+    | 'errorUploadScreenshot'
+    | Error
+}
+
+type TrelloSuccess = {
+  type: 'success'
+}
+
+export type TrelloResponse = Promise<TrelloSuccess | TrelloError>
 
 type JiraError = {
   type: 'error'
