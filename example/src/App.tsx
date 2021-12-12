@@ -71,7 +71,7 @@ export default function App() {
 
   const showDev = async () => {
     const presentResult = await devTools.presentDevTools()
-    if (presentResult) await sendToTrello(presentResult)
+    if (presentResult) await sendToSlack(presentResult)
   }
 
   return (
