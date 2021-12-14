@@ -2,4 +2,5 @@
 <resources>
     <string name="preview">preview</string>
     <string name="send_data">Send data</string>
+    <string name="summary">Summary</string>
 </resources>
