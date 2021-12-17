@@ -179,7 +179,7 @@ class _DevTools {
         type = 'TRACE'
         break
     }
-    return `[${time} ${type}]: ${message}${error}`
+    return `[${time} ${type}]:\n${message}${error}\n`
   }
 
   private static pad(value: number): string {
@@ -204,4 +204,4 @@ class _DevTools {
 }
 
 export const devTools = new _DevTools()
-export {DevToolsPresentResult}
+export type {DevToolsPresentResult}
