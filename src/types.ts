@@ -105,6 +105,6 @@ export type JiraIssueResponse = Promise<JiraError | JiraSuccess>
 
 export interface DevToolsPresentResult {
   readonly summary: string
-  readonly logFilePath: string
+  logFilePath: string
   readonly screenshotPath?: string
 }

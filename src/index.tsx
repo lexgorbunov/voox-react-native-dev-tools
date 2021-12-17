@@ -16,6 +16,16 @@ import {createJiraIssue} from './jira'
 import {uploadToDiscord} from './discord'
 import {uploadToTrello} from './trello'
 
+interface IDevTools {
+  writeLog(message: string): void
+  logPath(): string
+  deleteLogFile(path: string): string
+}
+
+declare global {
+  var devTools: IDevTools
+}
+
 const LINKING_ERROR =
   `The package 'react-native-dev-tools' doesn't seem to be linked. Make sure: \n\n` +
   Platform.select({ios: "- You have run 'pod install'\n", default: ''}) +
@@ -60,50 +70,55 @@ class _DevTools {
 
   logLevel: LogLevel = LogLevel.LOG
 
-  async error(message: string, e: any = undefined): Promise<boolean> {
+  async error(message: string, e: any = undefined) {
     const level = LogLevel.ERROR
     if (this.logLevel < level) return false
-    return DevTools.writeLog(_DevTools.makeLogString(level, message, e))
+    return _DevTools.writeLog(_DevTools.makeLogString(level, message, e))
   }
 
-  async warn(message: string, e: any = undefined): Promise<boolean> {
+  async warn(message: string, e: any = undefined) {
     const level = LogLevel.WARN
     if (this.logLevel < level) return false
-    return DevTools.writeLog(_DevTools.makeLogString(level, message, e))
+    return _DevTools.writeLog(_DevTools.makeLogString(level, message, e))
   }
 
-  async log(message: string, e: any = undefined): Promise<boolean> {
+  async log(message: string, e: any = undefined) {
     const level = LogLevel.LOG
     if (this.logLevel < level) return false
-    return DevTools.writeLog(_DevTools.makeLogString(level, message, e))
+    return _DevTools.writeLog(_DevTools.makeLogString(level, message, e))
   }
 
-  async debug(message: string, e: any = undefined): Promise<boolean> {
+  async debug(message: string, e: any = undefined) {
     const level = LogLevel.DEBUG
     if (this.logLevel < level) return false
-    return DevTools.writeLog(_DevTools.makeLogString(level, message, e))
+    return _DevTools.writeLog(_DevTools.makeLogString(level, message, e))
   }
 
-  async trace(message: string, e: any = undefined): Promise<boolean> {
+  async trace(message: string, e: any = undefined) {
     const level = LogLevel.TRACE
     if (this.logLevel < level) return false
-    return DevTools.writeLog(_DevTools.makeLogString(level, message, e))
+    return _DevTools.writeLog(_DevTools.makeLogString(level, message, e))
   }
 
-  getAllLogs(): Promise<string> {
-    return DevTools.getAllLogs()
+  private static writeLog(message: string) {
+    global.devTools.writeLog(message)
   }
 
-  screenshot(): Promise<string> {
-    return DevTools.screenshot()
+  async presentDevTools(): Promise<DevToolsPresentResult | undefined | null> {
+    const response = await DevTools.presentDevTools()
+    if (!response) return undefined
+    if (Platform.OS === 'ios') {
+      response.logFilePath = global.devTools.logPath()
+    }
+    return response
   }
 
-  presentDevTools(): Promise<DevToolsPresentResult | undefined | null> {
-    return DevTools.presentDevTools()
-  }
-
-  deleteLogFile(): Promise<boolean> {
-    return DevTools.deleteLogFile()
+  deleteLogFile() {
+    if (Platform.OS === 'ios') {
+      global.devTools.deleteLogFile(global.devTools.logPath())
+    } else {
+      DevTools.deleteLogFile()
+    }
   }
 
   enableShaker(enable: boolean) {

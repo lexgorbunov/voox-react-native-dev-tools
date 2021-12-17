@@ -3,7 +3,6 @@ import React
 
 @objc(DevTools)
 class DevTools: RCTEventEmitter {
-    let logger = Logger()
     
     override class func requiresMainQueueSetup() -> Bool {
         return false
@@ -44,30 +43,5 @@ class DevTools: RCTEventEmitter {
                 resolve(imageData!.base64EncodedString())
             }
         }
-    }
-    
-    @objc
-    func writeLog(
-        _ message: String,
-        resolve: @escaping RCTPromiseResolveBlock,
-        reject: @escaping RCTPromiseRejectBlock
-    ) {
-        logger.writeLog(message, resolver: resolve, rejecter: reject)
-    }
-    
-    @objc
-    func getAllLogs(
-        _ resolve: @escaping RCTPromiseResolveBlock,
-        reject: @escaping RCTPromiseRejectBlock
-    ) {
-        logger.getAllLogs(resolver: resolve, rejecter: reject)
-    }
-    
-    @objc
-    func deleteLogFile(
-        _ resolve: @escaping RCTPromiseResolveBlock,
-        reject: @escaping RCTPromiseRejectBlock
-    ) {
-        logger.deleteLogFile(resolver: resolve)
     }
 }

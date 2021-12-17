@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		92251A84276279B200328056 /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92251A83276279B200328056 /* Logger.swift */; };
 		922FB1FC276282AA00DEF6BC /* DevToolsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 922FB1FB276282AA00DEF6BC /* DevToolsViewController.swift */; };
+		92511BC0276CFE1300358199 /* DevTools.mm in Sources */ = {isa = PBXBuildFile; fileRef = B3E7B5891CC2AC0600A0062D /* DevTools.mm */; };
 		92F0ACA22764B239006441AF /* DrawPathView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92F0ACA12764B239006441AF /* DrawPathView.swift */; };
 		92F0ACA42764B2B8006441AF /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92F0ACA32764B2B8006441AF /* Utils.swift */; };
 		F4FF95D7245B92E800C19C63 /* DevTools.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4FF95D6245B92E800C19C63 /* DevTools.swift */; };
@@ -30,9 +31,10 @@
 		134814201AA4EA6300B7C361 /* libDevTools.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libDevTools.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		92251A83276279B200328056 /* Logger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
 		922FB1FB276282AA00DEF6BC /* DevToolsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DevToolsViewController.swift; sourceTree = "<group>"; };
+		92511BBF276CFDAF00358199 /* DevTools.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DevTools.h; sourceTree = "<group>"; };
 		92F0ACA12764B239006441AF /* DrawPathView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DrawPathView.swift; sourceTree = "<group>"; };
 		92F0ACA32764B2B8006441AF /* Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
-		B3E7B5891CC2AC0600A0062D /* DevTools.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DevTools.m; sourceTree = "<group>"; };
+		B3E7B5891CC2AC0600A0062D /* DevTools.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = DevTools.mm; sourceTree = "<group>"; };
 		F4FF95D5245B92E700C19C63 /* DevTools-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "DevTools-Bridging-Header.h"; sourceTree = "<group>"; };
 		F4FF95D6245B92E800C19C63 /* DevTools.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DevTools.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -59,12 +61,13 @@
 		58B511D21A9E6C8500147676 = {
 			isa = PBXGroup;
 			children = (
+				92511BBF276CFDAF00358199 /* DevTools.h */,
+				B3E7B5891CC2AC0600A0062D /* DevTools.mm */,
 				92F0ACA32764B2B8006441AF /* Utils.swift */,
 				92F0ACA12764B239006441AF /* DrawPathView.swift */,
 				922FB1FB276282AA00DEF6BC /* DevToolsViewController.swift */,
 				92251A83276279B200328056 /* Logger.swift */,
 				F4FF95D6245B92E800C19C63 /* DevTools.swift */,
-				B3E7B5891CC2AC0600A0062D /* DevTools.m */,
 				F4FF95D5245B92E700C19C63 /* DevTools-Bridging-Header.h */,
 				134814211AA4EA7D00B7C361 /* Products */,
 			);
@@ -132,6 +135,7 @@
 				922FB1FC276282AA00DEF6BC /* DevToolsViewController.swift in Sources */,
 				92251A84276279B200328056 /* Logger.swift in Sources */,
 				92F0ACA22764B239006441AF /* DrawPathView.swift in Sources */,
+				92511BC0276CFE1300358199 /* DevTools.mm in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -71,6 +71,7 @@ export default function App() {
 
   const showDev = async () => {
     const presentResult = await devTools.presentDevTools()
+    console.log('[App.showDev]', presentResult)
     if (presentResult) await sendToSlack(presentResult)
   }
 
