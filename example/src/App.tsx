@@ -9,7 +9,12 @@ export default function App() {
   // const [screenshot, setScreenshot] = useState<string | null>(null)
 
   const initLogs = async () => {
-    await devTools.setup({enableShaker: true})
+    await devTools.setup({
+      onShake: () => {
+        console.log('[App.onShake]')
+        showDev()
+      },
+    })
     devTools.log('1 some log')
     devTools.error('1 some error', new Error('Error text'))
     devTools.warn('1 some Warn')

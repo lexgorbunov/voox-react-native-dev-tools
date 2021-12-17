@@ -10,6 +10,7 @@
 		92251A84276279B200328056 /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92251A83276279B200328056 /* Logger.swift */; };
 		922FB1FC276282AA00DEF6BC /* DevToolsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 922FB1FB276282AA00DEF6BC /* DevToolsViewController.swift */; };
 		92511BC0276CFE1300358199 /* DevTools.mm in Sources */ = {isa = PBXBuildFile; fileRef = B3E7B5891CC2AC0600A0062D /* DevTools.mm */; };
+		92511BC4276D1BDA00358199 /* RNShakeEvent.m in Sources */ = {isa = PBXBuildFile; fileRef = 92511BC3276D1BDA00358199 /* RNShakeEvent.m */; };
 		92F0ACA22764B239006441AF /* DrawPathView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92F0ACA12764B239006441AF /* DrawPathView.swift */; };
 		92F0ACA42764B2B8006441AF /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92F0ACA32764B2B8006441AF /* Utils.swift */; };
 		F4FF95D7245B92E800C19C63 /* DevTools.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4FF95D6245B92E800C19C63 /* DevTools.swift */; };
@@ -32,6 +33,8 @@
 		92251A83276279B200328056 /* Logger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
 		922FB1FB276282AA00DEF6BC /* DevToolsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DevToolsViewController.swift; sourceTree = "<group>"; };
 		92511BBF276CFDAF00358199 /* DevTools.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DevTools.h; sourceTree = "<group>"; };
+		92511BC2276D1BC600358199 /* RNShakeEvent.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RNShakeEvent.h; sourceTree = "<group>"; };
+		92511BC3276D1BDA00358199 /* RNShakeEvent.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RNShakeEvent.m; sourceTree = "<group>"; };
 		92F0ACA12764B239006441AF /* DrawPathView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DrawPathView.swift; sourceTree = "<group>"; };
 		92F0ACA32764B2B8006441AF /* Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
 		B3E7B5891CC2AC0600A0062D /* DevTools.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = DevTools.mm; sourceTree = "<group>"; };
@@ -61,6 +64,8 @@
 		58B511D21A9E6C8500147676 = {
 			isa = PBXGroup;
 			children = (
+				92511BC3276D1BDA00358199 /* RNShakeEvent.m */,
+				92511BC2276D1BC600358199 /* RNShakeEvent.h */,
 				92511BBF276CFDAF00358199 /* DevTools.h */,
 				B3E7B5891CC2AC0600A0062D /* DevTools.mm */,
 				92F0ACA32764B2B8006441AF /* Utils.swift */,
@@ -133,6 +138,7 @@
 				92F0ACA42764B2B8006441AF /* Utils.swift in Sources */,
 				F4FF95D7245B92E800C19C63 /* DevTools.swift in Sources */,
 				922FB1FC276282AA00DEF6BC /* DevToolsViewController.swift in Sources */,
+				92511BC4276D1BDA00358199 /* RNShakeEvent.m in Sources */,
 				92251A84276279B200328056 /* Logger.swift in Sources */,
 				92F0ACA22764B239006441AF /* DrawPathView.swift in Sources */,
 				92511BC0276CFE1300358199 /* DevTools.mm in Sources */,

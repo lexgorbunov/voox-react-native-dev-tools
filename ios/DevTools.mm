@@ -49,6 +49,7 @@ RCT_EXPORT_MODULE()
     [self installLibrary];
 }
 
+
 - (void)installLibrary {
     
     RCTCxxBridge *cxxBridge = (RCTCxxBridge *)self.bridge;

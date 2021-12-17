@@ -3,6 +3,7 @@ import React
 
 @objc(DevTools)
 class DevTools: RCTEventEmitter {
+    var shake: RNShakeEvent?
     
     override class func requiresMainQueueSetup() -> Bool {
         return false
@@ -13,8 +14,18 @@ class DevTools: RCTEventEmitter {
     }
     
     @objc
+    private func didShake() {
+        sendEvent(withName: "DevToolsData", body: [])
+    }
+    
+    @objc
     func enableShaker(_ enabled: Bool) {
-        //sendEvent(withName: "DevToolsData", body: [])
+        shake = nil
+        NotificationCenter.default.removeObserver(self, name: .init(rawValue: "shakeDetected"), object: nil)
+        if enabled {
+            shake = RNShakeEvent()
+            NotificationCenter.default.addObserver(self, selector: #selector(didShake), name: .init(rawValue: "shakeDetected"), object: nil)
+        }
     }
     
     @objc

@@ -10,6 +10,7 @@
 #import <React/RCTBridge.h>
 #import <React/RCTBundleURLProvider.h>
 #import <React/RCTRootView.h>
+#import <React/RCTDevSettings.h>
 
 @implementation AppDelegate
 
@@ -27,6 +28,7 @@
   rootViewController.view = rootView;
   self.window.rootViewController = rootViewController;
   [self.window makeKeyAndVisible];
+  bridge.devSettings.isShakeToShowDevMenuEnabled = false;
   return YES;
 }
 

@@ -52,10 +52,13 @@ class DevToolsViewController: UIViewController {
     static var screenShot: UIImage?
     static var resolve: RCTPromiseResolveBlock?
     static var didResolveUse = false
+    static var isPresented = false
 
     static func presentDevController(
         _ resolve: @escaping RCTPromiseResolveBlock
     ) {
+        if Self.isPresented { return }
+        Self.isPresented = true
         Self.didResolveUse = false
         Self.resolve = resolve
         DispatchQueue.main.async {
@@ -155,5 +158,6 @@ class DevToolsViewController: UIViewController {
         if !Self.didResolveUse { Self.resolve?(nil) }
         Self.screenShot = nil
         Self.resolve = nil
+        Self.isPresented = false
     }
 }

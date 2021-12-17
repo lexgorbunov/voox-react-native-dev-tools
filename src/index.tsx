@@ -57,15 +57,18 @@ export enum LogLevel {
 }
 
 class _DevTools {
+  private onShake?: () => void
   constructor() {
     devToolsEmitter.addListener('DevToolsData', () => {
-      DevTools.presentDevTools()
+      console.log('[DevToolsData.listener]')
+      this.onShake?.()
     })
   }
 
-  async setup(options: {enableShaker?: boolean; preserveLog?: boolean}) {
-    if (options.enableShaker) this.enableShaker(true)
+  async setup(options: {preserveLog?: boolean; onShake?: () => void}) {
+    if (options.onShake) this.enableShaker(true)
     if (!options.preserveLog) await this.deleteLogFile()
+    this.onShake = options.onShake
   }
 
   logLevel: LogLevel = LogLevel.LOG
