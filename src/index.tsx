@@ -73,38 +73,20 @@ class _DevTools {
 
   logLevel: LogLevel = LogLevel.LOG
 
-  async error(message: string, e: any = undefined) {
-    const level = LogLevel.ERROR
-    if (this.logLevel < level) return false
-    return _DevTools.writeLog(_DevTools.makeLogString(level, message, e))
-  }
+  error = (message: string, e: any = undefined) =>
+    this.sendLog(message, LogLevel.ERROR, e)
+  warn = (message: string, e: any = undefined) =>
+    this.sendLog(message, LogLevel.WARN, e)
+  log = (message: string, e: any = undefined) =>
+    this.sendLog(message, LogLevel.LOG, e)
+  debug = (message: string, e: any = undefined) =>
+    this.sendLog(message, LogLevel.DEBUG, e)
+  trace = (message: string, e: any = undefined) =>
+    this.sendLog(message, LogLevel.TRACE, e)
 
-  async warn(message: string, e: any = undefined) {
-    const level = LogLevel.WARN
-    if (this.logLevel < level) return false
-    return _DevTools.writeLog(_DevTools.makeLogString(level, message, e))
-  }
-
-  async log(message: string, e: any = undefined) {
-    const level = LogLevel.LOG
-    if (this.logLevel < level) return false
-    return _DevTools.writeLog(_DevTools.makeLogString(level, message, e))
-  }
-
-  async debug(message: string, e: any = undefined) {
-    const level = LogLevel.DEBUG
-    if (this.logLevel < level) return false
-    return _DevTools.writeLog(_DevTools.makeLogString(level, message, e))
-  }
-
-  async trace(message: string, e: any = undefined) {
-    const level = LogLevel.TRACE
-    if (this.logLevel < level) return false
-    return _DevTools.writeLog(_DevTools.makeLogString(level, message, e))
-  }
-
-  private static writeLog(message: string) {
-    global.devTools.writeLog(message)
+  private sendLog(message: string, level: LogLevel, e: any = undefined) {
+    if (this.logLevel < level) return
+    global.devTools.writeLog(_DevTools.makeLogString(level, message, e))
   }
 
   async presentDevTools(): Promise<DevToolsPresentResult | undefined | null> {
