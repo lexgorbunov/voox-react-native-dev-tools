@@ -166,4 +166,13 @@ static void install(jsi::Runtime &jsiRuntime, DevToolsModule *module) {
     [handle closeFile];
 }
 
++(void) screenshot {
+    auto layer = [[[UIApplication sharedApplication] keyWindow] layer];
+    auto scale = [[UIScreen mainScreen] scale];
+    UIGraphicsBeginImageContextWithOptions(layer.frame.size, false, scale);
+    [layer renderInContext:UIGraphicsGetCurrentContext()];
+    auto screenshot = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+}
+
 @end
