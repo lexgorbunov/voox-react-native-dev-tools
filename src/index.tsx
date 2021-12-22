@@ -19,7 +19,7 @@ import {uploadToTrello} from './trello'
 interface IDevTools {
   writeLog(message: string): void
   logPath(): string
-  deleteLogFile(path: string): string
+  deleteLogFile(): string
 }
 
 declare global {
