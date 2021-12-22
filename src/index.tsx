@@ -86,7 +86,11 @@ class _DevTools {
 
   private sendLog(message: string, level: LogLevel, e: any = undefined) {
     if (this.logLevel < level) return
-    global.devTools.writeLog(_DevTools.makeLogString(level, message, e))
+    if (Platform.OS === 'android') {
+      DevTools.writeLog(_DevTools.makeLogString(level, message, e))
+    } else {
+      global.devTools.writeLog(_DevTools.makeLogString(level, message, e))
+    }
   }
 
   async presentDevTools(): Promise<DevToolsPresentResult | undefined | null> {
@@ -203,5 +207,5 @@ class _DevTools {
   }
 }
 
-export const devTools = new _DevTools()
+export const nativeDevTools = new _DevTools()
 export type {DevToolsPresentResult}
