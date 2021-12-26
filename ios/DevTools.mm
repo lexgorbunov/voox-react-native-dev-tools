@@ -120,6 +120,22 @@ static void install(jsi::Runtime &jsiRuntime, DevToolsModule *module) {
                                                         return jsi::Value::undefined();
                                                     });
     
+    auto existsFile = jsi::Function::createFromHostFunction(
+                                                     jsiRuntime,
+                                                     jsi::PropNameID::forAscii(jsiRuntime,"existsFile"),
+                                                     1,
+                                                     [module](
+                                                        jsi::Runtime &rt,
+                                                        const jsi::Value &thisValue,
+                                                        const jsi::Value *arguments,
+                                                        size_t count
+                                                    ) -> jsi::Value {
+                                                        auto path = arguments[0].asString(rt).utf8(rt);
+                                                        auto nsPath = [NSString stringWithUTF8String:path.c_str()];
+                                                        BOOL exists = [DevToolsModule existsFile:nsPath];
+                                                        return jsi::Value(exists);
+                                                    });
+    
     
     // Create final object that will be injected into the global object
     auto exportModule = jsi::Object(jsiRuntime);
@@ -154,6 +170,10 @@ static void install(jsi::Runtime &jsiRuntime, DevToolsModule *module) {
     NSLog(@"deleteLogFile %@", [url absoluteString]);
     [[NSFileManager defaultManager] removeItemAtURL:url error:&error];
     NSLog(@"deleted %@", error.description);
+}
+
++(BOOL) existsFile:(NSString*)atPath {
+    return [[NSFileManager defaultManager] fileExistsAtPath:atPath]
 }
 
 +(void) write:(NSString*)message {

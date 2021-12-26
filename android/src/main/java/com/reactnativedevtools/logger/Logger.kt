@@ -10,7 +10,7 @@ class Logger(context: Context, logFileName: String) {
 
     val logFile = File(context.filesDir, logFileName)
 
-    private val queue by lazy {
+    val queue by lazy {
         val thread = HandlerThread("AppLoggerQueue")
         thread.start()
         return@lazy Handler(thread.looper)
@@ -27,11 +27,13 @@ class Logger(context: Context, logFileName: String) {
     }
 
     fun removeLogFile(promise: Promise) {
+      queue.post {
         if (logFile.exists()) {
-            logFile.delete()
-            promise.resolve(true)
-            return
+          logFile.delete()
+          promise.resolve(true)
+          return@post
         }
         promise.resolve(false)
+      }
     }
 }
