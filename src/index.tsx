@@ -186,7 +186,7 @@ const makeLogString = (
       type = 'TRACE'
       break
   }
-  return `🚀 [${time} ${type}]: ▸ ${message}${error}\n`
+  return `📠 [${time} ${type}]: ▸ ${message}${error}\n`
 }
 
 const pad = (value: number): string => {
