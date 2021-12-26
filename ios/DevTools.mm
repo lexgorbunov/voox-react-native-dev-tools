@@ -173,7 +173,7 @@ static void install(jsi::Runtime &jsiRuntime, DevToolsModule *module) {
 }
 
 +(BOOL) existsFile:(NSString*)atPath {
-    return [[NSFileManager defaultManager] fileExistsAtPath:atPath]
+    return [[NSFileManager defaultManager] fileExistsAtPath:atPath];
 }
 
 +(void) write:(NSString*)message {
