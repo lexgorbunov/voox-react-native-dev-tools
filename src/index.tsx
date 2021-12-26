@@ -1,5 +1,5 @@
 import {NativeEventEmitter, NativeModules, Platform} from 'react-native'
-import rnfs from 'react-native-fs'
+
 import type {
   DevToolsPresentResult,
   DiscordParams,
@@ -15,6 +15,17 @@ import {uploadToSlack} from './slack'
 import {createJiraIssue} from './jira'
 import {uploadToDiscord} from './discord'
 import {uploadToTrello} from './trello'
+
+interface IDevTools {
+  writeLog(message: string): void
+  logPath(): string
+  deleteLogFile(path: string): string
+  existsFile(path: string): boolean
+}
+
+declare global {
+  var devTools: IDevTools
+}
 
 const LINKING_ERROR =
   `The package 'react-native-dev-tools' doesn't seem to be linked. Make sure: \n\n` +
@@ -47,63 +58,55 @@ export enum LogLevel {
 }
 
 class _DevTools {
+  private onShake?: () => void
   constructor() {
     devToolsEmitter.addListener('DevToolsData', () => {
-      DevTools.presentDevTools()
+      console.log('[DevToolsData.listener]')
+      this.onShake?.()
     })
   }
 
-  async setup(options: {enableShaker?: boolean; preserveLog?: boolean}) {
-    if (options.enableShaker) this.enableShaker(true)
+  async setup(options: {preserveLog?: boolean; onShake?: () => void}) {
+    if (options.onShake) this.enableShaker(true)
     if (!options.preserveLog) await this.deleteLogFile()
+    this.onShake = options.onShake
   }
 
-  logLevel: LogLevel = LogLevel.LOG
+  private logLevel: LogLevel = LogLevel.LOG
 
-  async error(message: string, e: any = undefined): Promise<boolean> {
-    const level = LogLevel.ERROR
-    if (this.logLevel < level) return false
-    return DevTools.writeLog(_DevTools.makeLogString(level, message, e))
+  error = (message: string, ...optionalParams: any[]) =>
+    this.sendLog(message, LogLevel.ERROR, optionalParams)
+  warn = (message: string, ...optionalParams: any[]) =>
+    this.sendLog(message, LogLevel.WARN, optionalParams)
+  log = (message: string, ...optionalParams: any[]) =>
+    this.sendLog(message, LogLevel.LOG, optionalParams)
+  debug = (message: string, ...optionalParams: any[]) =>
+    this.sendLog(message, LogLevel.DEBUG, optionalParams)
+  trace = (message: string, ...optionalParams: any[]) =>
+    this.sendLog(message, LogLevel.TRACE, optionalParams)
+
+  private sendLog(message: string, level: LogLevel, ...optionalParams: any[]) {
+    if (this.logLevel < level) return
+    const log = makeLogString(level, message, optionalParams)
+    if (Platform.OS === 'android') DevTools.writeLog(log)
+    else global.devTools.writeLog(log)
   }
 
-  async warn(message: string, e: any = undefined): Promise<boolean> {
-    const level = LogLevel.WARN
-    if (this.logLevel < level) return false
-    return DevTools.writeLog(_DevTools.makeLogString(level, message, e))
+  async presentDevTools(): Promise<DevToolsPresentResult | undefined | null> {
+    const response = await DevTools.presentDevTools()
+    if (!response) return undefined
+    if (Platform.OS === 'ios') {
+      response.logFilePath = global.devTools.logPath()
+    }
+    return response
   }
 
-  async log(message: string, e: any = undefined): Promise<boolean> {
-    const level = LogLevel.LOG
-    if (this.logLevel < level) return false
-    return DevTools.writeLog(_DevTools.makeLogString(level, message, e))
-  }
-
-  async debug(message: string, e: any = undefined): Promise<boolean> {
-    const level = LogLevel.DEBUG
-    if (this.logLevel < level) return false
-    return DevTools.writeLog(_DevTools.makeLogString(level, message, e))
-  }
-
-  async trace(message: string, e: any = undefined): Promise<boolean> {
-    const level = LogLevel.TRACE
-    if (this.logLevel < level) return false
-    return DevTools.writeLog(_DevTools.makeLogString(level, message, e))
-  }
-
-  getAllLogs(): Promise<string> {
-    return DevTools.getAllLogs()
-  }
-
-  screenshot(): Promise<string> {
-    return DevTools.screenshot()
-  }
-
-  presentDevTools(): Promise<DevToolsPresentResult | undefined | null> {
-    return DevTools.presentDevTools()
-  }
-
-  deleteLogFile(): Promise<boolean> {
-    return DevTools.deleteLogFile()
+  deleteLogFile() {
+    if (Platform.OS === 'ios') {
+      global.devTools.deleteLogFile(global.devTools.logPath())
+    } else {
+      DevTools.deleteLogFile()
+    }
   }
 
   enableShaker(enable: boolean) {
@@ -113,15 +116,13 @@ class _DevTools {
   async sendDevLogsToSlack(
     params: UploadParams,
   ): Promise<SlackResponse | FileNotExists> {
-    const exists = await rnfs.exists(params.logFilePath)
-    if (!exists) return 'notExists'
     return uploadToSlack(params)
   }
 
   async sendDevLogsToTrello(
     params: TrelloParams,
   ): Promise<SlackResponse | FileNotExists> {
-    const exists = await rnfs.exists(params.logFilePath)
+    const exists = await existsFile(params.logFilePath)
     if (!exists) return 'notExists'
     return uploadToTrello(params)
   }
@@ -129,7 +130,7 @@ class _DevTools {
   async sendDevLogsToDiscord(
     params: DiscordParams,
   ): Promise<DiscordResponse | FileNotExists> {
-    const exists = await rnfs.exists(params.logFilePath)
+    const exists = await existsFile(params.logFilePath)
     if (!exists) return 'notExists'
     return uploadToDiscord(params)
   }
@@ -137,71 +138,76 @@ class _DevTools {
   async createJiraIssue(
     params: JiraIssue,
   ): Promise<JiraIssueResponse | FileNotExists> {
-    const exists = await rnfs.exists(params.logFilePath)
+    const exists = await existsFile(params.logFilePath)
     if (!exists) return 'notExists'
     return createJiraIssue(params)
   }
+}
 
-  private static makeLogString(
-    level: LogLevel,
-    message: string,
-    e?: Error,
-  ): string {
-    const date = _DevTools.getMoscowDate()
-    const day = date.getDate()
-    const month = date.getMonth() + 1
-    const DD = _DevTools.pad(day)
-    const MM = _DevTools.pad(month)
-    const HH = _DevTools.pad(date.getHours())
-    const mm = _DevTools.pad(date.getMinutes())
-    const ss = _DevTools.pad(date.getSeconds())
-    const time = `${DD}.${MM}.${date.getFullYear()} ${HH}:${mm}:${ss}`
-    let error = ''
-    if (e) {
-      if (e.message) error += `\n${e.message}`
-      if (e.stack) error += `\n${e.stack}`
-    }
-    let type = '?'
-    switch (level) {
-      case LogLevel.ERROR:
-        type = 'ERROR'
-        break
-      case LogLevel.WARN:
-        type = 'WARN'
-        break
-      case LogLevel.LOG:
-        type = 'LOG'
-        break
-      case LogLevel.DEBUG:
-        type = 'DEBUG'
-        break
-      case LogLevel.TRACE:
-        type = 'TRACE'
-        break
-    }
-    return `[${time} ${type}]:\n${message}${error}\n`
-  }
-
-  private static pad(value: number): string {
-    return value < 10 ? `0${value}` : value.toString(10)
-  }
-
-  private static getMoscowDate(): Date {
-    const date = new Date()
-    return new Date(
-      Date.UTC(
-        date.getUTCFullYear(),
-        date.getUTCMonth(),
-        date.getUTCDate(),
-        date.getUTCHours(),
-        date.getUTCMinutes(),
-        date.getUTCSeconds(),
-      ) +
-        date.getTimezoneOffset() * 60000 -
-        MOSCOW_TIMEZONE_OFFSET * 60000,
-    )
+const existsFile = (path: string): Promise<boolean> => {
+  if (Platform.OS === 'ios') {
+    return Promise.resolve(global.devTools.existsFile(path))
+  } else {
+    return DevTools.existsFile(path)
   }
 }
 
-export const devTools = new _DevTools()
+const makeLogString = (
+  level: LogLevel,
+  message: string,
+  ...optionalParams: any[]
+): string => {
+  const date = getMoscowDate()
+  const day = date.getDate()
+  const month = date.getMonth() + 1
+  const DD = pad(day)
+  const MM = pad(month)
+  const HH = pad(date.getHours())
+  const mm = pad(date.getMinutes())
+  const ss = pad(date.getSeconds())
+  const time = `${DD}.${MM}.${date.getFullYear()} ${HH}:${mm}:${ss}`
+  let error = optionalParams.join(', ')
+
+  let type = '?'
+  switch (level) {
+    case LogLevel.ERROR:
+      type = 'ERROR'
+      break
+    case LogLevel.WARN:
+      type = 'WARN'
+      break
+    case LogLevel.LOG:
+      type = 'LOG'
+      break
+    case LogLevel.DEBUG:
+      type = 'DEBUG'
+      break
+    case LogLevel.TRACE:
+      type = 'TRACE'
+      break
+  }
+  return `📠 [${time} ${type}]: ▸ ${message}${error}\n`
+}
+
+const pad = (value: number): string => {
+  return value < 10 ? `0${value}` : value.toString(10)
+}
+
+const getMoscowDate = (): Date => {
+  const date = new Date()
+  return new Date(
+    Date.UTC(
+      date.getUTCFullYear(),
+      date.getUTCMonth(),
+      date.getUTCDate(),
+      date.getUTCHours(),
+      date.getUTCMinutes(),
+      date.getUTCSeconds(),
+    ) +
+      date.getTimezoneOffset() * 60000 -
+      MOSCOW_TIMEZONE_OFFSET * 60000,
+  )
+}
+
+export const nativeDevTools = new _DevTools()
 export type {DevToolsPresentResult}

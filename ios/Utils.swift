@@ -62,10 +62,8 @@ func prepareScreenshotAndLogFile(
             )
             if didCreate { screenshotFilePath = screenshotFile }
         }
-        
-        let logFile = Logger.logFilePath.absoluteString.replacingOccurrences(of: "file:///", with: "/")
+
         resolve?([
-            "logFilePath": logFile,
             "summary": summary,
             "screenshotPath": screenshotFilePath
         ])

@@ -15,6 +15,7 @@ import com.reactnativedevtools.logger.Logger
 import com.reactnativedevtools.screenshot.ScreenShotHelper
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
+import java.io.File
 
 private const val DIALOG_TAG = "DevToolsDialog"
 
@@ -81,18 +82,36 @@ class DevToolsModule(
   }
 
   @ReactMethod
+  fun logPath(promise: Promise) {
+    promise.resolve(logger.logFile.absolutePath)
+  }
+
+  @ReactMethod
   fun getAllLogs(promise: Promise) {
-    val file = logger.logFile
-    if (!file.exists()) {
-      promise.resolve(null)
-      return
+    logger.queue.post {
+      val file = logger.logFile
+      if (!file.exists()) {
+        promise.resolve(null)
+        return@post
+      }
+      promise.resolve(file.readText(Charsets.UTF_8))
     }
-    promise.resolve(file.readText(Charsets.UTF_8))
   }
 
   @ReactMethod
   fun presentDevTools(promise: Promise) {
     showDialog(promise::resolve)
+  }
+
+  @ReactMethod
+  fun existsFile(path: String, promise: Promise) {
+    logger.queue.post {
+      val file = File(path)
+      if (file.exists()) {
+        file.delete()
+      }
+      promise.resolve(null)
+    }
   }
 
   private fun showDialog(onFinish: (data: WritableMap?) -> Unit) {

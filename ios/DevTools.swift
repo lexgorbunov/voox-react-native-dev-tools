@@ -3,7 +3,7 @@ import React
 
 @objc(DevTools)
 class DevTools: RCTEventEmitter {
-    let logger = Logger()
+    var shake: RNShakeEvent?
     
     override class func requiresMainQueueSetup() -> Bool {
         return false
@@ -14,8 +14,18 @@ class DevTools: RCTEventEmitter {
     }
     
     @objc
+    private func didShake() {
+        sendEvent(withName: "DevToolsData", body: [])
+    }
+    
+    @objc
     func enableShaker(_ enabled: Bool) {
-        //sendEvent(withName: "DevToolsData", body: [])
+        shake = nil
+        NotificationCenter.default.removeObserver(self, name: .init(rawValue: "shakeDetected"), object: nil)
+        if enabled {
+            shake = RNShakeEvent()
+            NotificationCenter.default.addObserver(self, selector: #selector(didShake), name: .init(rawValue: "shakeDetected"), object: nil)
+        }
     }
     
     @objc
@@ -44,30 +54,5 @@ class DevTools: RCTEventEmitter {
                 resolve(imageData!.base64EncodedString())
             }
         }
-    }
-    
-    @objc
-    func writeLog(
-        _ message: String,
-        resolve: @escaping RCTPromiseResolveBlock,
-        reject: @escaping RCTPromiseRejectBlock
-    ) {
-        logger.writeLog(message, resolver: resolve, rejecter: reject)
-    }
-    
-    @objc
-    func getAllLogs(
-        _ resolve: @escaping RCTPromiseResolveBlock,
-        reject: @escaping RCTPromiseRejectBlock
-    ) {
-        logger.getAllLogs(resolver: resolve, rejecter: reject)
-    }
-    
-    @objc
-    func deleteLogFile(
-        _ resolve: @escaping RCTPromiseResolveBlock,
-        reject: @escaping RCTPromiseRejectBlock
-    ) {
-        logger.deleteLogFile(resolver: resolve)
     }
 }

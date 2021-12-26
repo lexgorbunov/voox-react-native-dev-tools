@@ -1,6 +1,6 @@
 {
   "name": "react-native-dev-tools",
-  "version": "0.3.6",
+  "version": "0.4.2",
   "description": "React Native dev tools",
   "main": "src/index",
   "module": "src/index",
@@ -65,7 +65,7 @@
     "react-native-fs": "*",
     "buffer": "^6.0.3"
   },
-  
+
   "dependencies": {
     "react-native-fs": "*",
     "buffer": "^6.0.3"
