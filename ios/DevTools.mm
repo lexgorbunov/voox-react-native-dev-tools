@@ -142,6 +142,7 @@ static void install(jsi::Runtime &jsiRuntime, DevToolsModule *module) {
     exportModule.setProperty(jsiRuntime, "writeLog", move(writeLog));
     exportModule.setProperty(jsiRuntime, "logPath", move(logPath));
     exportModule.setProperty(jsiRuntime, "deleteLogFile", move(deleteLogFile));
+    exportModule.setProperty(jsiRuntime, "existsFile", move(existsFile));
     jsiRuntime.global().setProperty(jsiRuntime, "devTools", exportModule);
 }
 
