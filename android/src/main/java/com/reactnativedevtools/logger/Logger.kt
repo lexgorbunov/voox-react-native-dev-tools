@@ -19,6 +19,7 @@ class Logger(context: Context, logFileName: String) {
     fun writeLog(message: String, promise: Promise? = null) {
         queue.post {
             ///data/user/0/adverto.sale/files/log.text
+            println("[Logger.writeLog] ${logFile.absolutePath}")
             if (!logFile.exists()) logFile.createNewFile()
             logFile.appendText(message)
             logFile.appendText("\n")

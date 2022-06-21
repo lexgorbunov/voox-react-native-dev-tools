@@ -107,10 +107,7 @@ class DevToolsModule(
   fun existsFile(path: String, promise: Promise) {
     logger.queue.post {
       val file = File(path)
-      if (file.exists()) {
-        file.delete()
-      }
-      promise.resolve(null)
+      promise.resolve(file.exists())
     }
   }
 
@@ -122,27 +119,26 @@ class DevToolsModule(
       ToolsDialogFragment.newInstance(screenshot = screenBase64).apply {
         fm.setFragmentResultListener(
           ToolsDialogFragment.REQUEST_KEY,
-          this,
-          { _, result ->
-            val action = result.getString(
-              ToolsDialogFragment.RESULT_KEY_ACTION,
-              ToolsDialogFragment.ACTION_DISMISS
-            )
-            if (action == ToolsDialogFragment.ACTION_DISMISS) return@setFragmentResultListener
-            val screenshot = result.getString(ToolsDialogFragment.RESULT_KEY_SCREENSHOT)
-            GlobalScope.async {
-              var path: String? = null
-              if (screenshot != null) {
-                path = ScreenShotHelper.saveToTempDirectory(reactContext, screenshot)
-              }
-              onFinish(makePresentResult(
-                action = action,
-                screenshot = path,
-                summary = result.getString(ToolsDialogFragment.RESULT_KEY_SUMMARY)
-              ))
+          this
+        ) { _, result ->
+          val action = result.getString(
+            ToolsDialogFragment.RESULT_KEY_ACTION,
+            ToolsDialogFragment.ACTION_DISMISS
+          )
+          if (action == ToolsDialogFragment.ACTION_DISMISS) return@setFragmentResultListener
+          val screenshot = result.getString(ToolsDialogFragment.RESULT_KEY_SCREENSHOT)
+          GlobalScope.async {
+            var path: String? = null
+            if (screenshot != null) {
+              path = ScreenShotHelper.saveToTempDirectory(reactContext, screenshot)
             }
+            onFinish(makePresentResult(
+              action = action,
+              screenshot = path,
+              summary = result.getString(ToolsDialogFragment.RESULT_KEY_SUMMARY)
+            ))
           }
-        )
+        }
       }.show(fm, DIALOG_TAG)
     }
   }
@@ -153,6 +149,7 @@ class DevToolsModule(
         result.putString("logFilePath", logger.logFile.absolutePath)
         if (!summary.isNullOrBlank())result.putString("summary", summary)
         if (!screenshot.isNullOrBlank()) result.putString("screenshotPath", screenshot)
+        result.putString("logFilePath", logger.logFile.absolutePath)
       }
       else -> null
     }

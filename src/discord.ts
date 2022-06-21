@@ -30,6 +30,7 @@ export const uploadToDiscord = async (
       },
     })
     const response = await r.promise
+    console.log('[Discord.uploadToDiscord]', response)
     if (response.statusCode === 200) {
       return {type: 'success'}
     }

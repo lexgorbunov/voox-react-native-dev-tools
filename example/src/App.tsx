@@ -2,33 +2,33 @@ import * as React from 'react'
 
 import {StyleSheet, Text, TouchableOpacity, View} from 'react-native'
 import type {DevToolsPresentResult} from 'react-native-dev-tools'
-import {devTools} from 'react-native-dev-tools'
+import {nativeDevTools} from 'react-native-dev-tools'
 
 export default function App() {
   // const [logs, setLogs] = useState('')
   // const [screenshot, setScreenshot] = useState<string | null>(null)
 
   const initLogs = async () => {
-    await devTools.setup({
+    await nativeDevTools.setup({
       onShake: () => {
         console.log('[App.onShake]')
         showDev()
       },
     })
-    devTools.log('1 some log')
-    devTools.error('1 some error', new Error('Error text'))
-    devTools.warn('1 some Warn')
+    nativeDevTools.log('1 some log')
+    nativeDevTools.error('1 some error', new Error('Error text'))
+    nativeDevTools.warn('1 some Warn')
   }
 
   React.useEffect(() => {
     initLogs()
-    // devTools.screenshot().then(setScreenshot)
+    // nativeDevTools.screenshot().then(setScreenshot)
   }, [])
 
   // @ts-ignore
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const sendToSlack = async (data: DevToolsPresentResult) => {
-    const sendResult = await devTools.sendDevLogsToSlack({
+    const sendResult = await nativeDevTools.sendDevLogsToSlack({
       logFilePath: data.logFilePath,
       screenshotPath: data.screenshotPath,
       summary: data.summary,
@@ -45,7 +45,7 @@ export default function App() {
   // @ts-ignore
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const sendToTrello = async (data: DevToolsPresentResult) => {
-    const sendResult = await devTools.sendDevLogsToTrello({
+    const sendResult = await nativeDevTools.sendDevLogsToTrello({
       logFilePath: data.logFilePath,
       screenshotPath: data.screenshotPath,
       summary: data.summary,
@@ -62,22 +62,22 @@ export default function App() {
   // @ts-ignore
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const sendToDiscord = async (data: DevToolsPresentResult) => {
-    const sendResult = await devTools.sendDevLogsToDiscord({
+    const sendResult = await nativeDevTools.sendDevLogsToDiscord({
       logFilePath: data.logFilePath,
       screenshotPath: data.screenshotPath,
       summary: data.summary,
       discord: {
         webhook:
-          'https://discord.com/api/webhooks/918915334168256522/mZRVbzVCNSRaDCKxyr-dZhw_4uG4nU3ptlteu2NvEGLUPLeKWUPxL6uuhUHNRDlACV42',
+          'https://discord.com/api/webhooks/924275658077659177/YYEygXnwkdsZZHrDmJs18hoTN60G8LUdpCcQ9Gsj6AQIiOFpAQFWHqCTaZBossUpVw3t',
       },
     })
     console.log('[App.sendToDiscord]', sendResult)
   }
 
   const showDev = async () => {
-    const presentResult = await devTools.presentDevTools()
+    const presentResult = await nativeDevTools.presentDevTools()
     console.log('[App.showDev]', presentResult)
-    if (presentResult) await sendToSlack(presentResult)
+    if (presentResult) await sendToDiscord(presentResult)
   }
 
   return (
@@ -86,6 +86,11 @@ export default function App() {
 
       <TouchableOpacity onPress={showDev}>
         <Text>Show Dev</Text>
+      </TouchableOpacity>
+
+
+      <TouchableOpacity style={{width: 100, height: 50}} onPress={() => nativeDevTools.log('Some log')}>
+        <Text>Log</Text>
       </TouchableOpacity>
     </View>
   )
